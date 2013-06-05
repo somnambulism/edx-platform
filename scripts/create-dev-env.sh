@@ -514,16 +514,28 @@ if [[ "${CURRENT_RUBY#*$CLEAN_RUBY_VER}" != "$CURRENT_RUBY" ]]; then
             We can use a quick fix here, but for a long term fix you want to add the following
             line to your ~/.bash_profile file:
 
+<<<<<<< HEAD
             export PATH=$HOME/.rvm/rubies/ruby-$RUBY_VER/bin:\$PATH
 
             Assuming you don't have a custom rvm installation, if you do have a custom rvm, 
             then just make sure that the very of ruby you're using is $RUBY_VER.
+=======
+            export PATH=$HOME/.rvm/rubies/ruby-1.9.3-p374/bin:$PATH
+
+            Assuming you don't have a custom rvm installation, if you do have a custom rvm, 
+            then just make sure that the very of ruby you're using is 1.9.3-p374.
+>>>>>>> Added test and fix for ruby versioning bug
 
             Press enter to continue and try the quick fix, or press control-C to abort"
 
   read dummy
 
+<<<<<<< HEAD
   export PATH=$HOME/.rvm/rubies/ruby-$RUBY_VER/bin:$PATH
+=======
+  export PATH=$HOME/.rvm/rubies/ruby-1.9.3-p374/bin:$PATH
+
+>>>>>>> Added test and fix for ruby versioning bug
 fi
 
 cd $BASE/edx-platform
