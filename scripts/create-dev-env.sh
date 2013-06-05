@@ -631,6 +631,7 @@ if [[ "${CURRENT_RUBY#*$CLEAN_RUBY_VER}" != "$CURRENT_RUBY" ]]; then
   export PATH=$HOME/.rvm/rubies/ruby-1.9.3-p374/bin:$PATH
 =======
   export PATH=$HOME/.rvm/rubies/ruby-$RUBY_VER/bin:$PATH
+<<<<<<< HEAD
 >>>>>>> Removed absolute rvm versioning, updated printout instructions and added update flag
 =======
   export PATH=$HOME/.rvm/rubies/ruby-1.9.3-p374/bin:$PATH
@@ -639,6 +640,8 @@ if [[ "${CURRENT_RUBY#*$CLEAN_RUBY_VER}" != "$CURRENT_RUBY" ]]; then
   export PATH=$HOME/.rvm/rubies/ruby-$RUBY_VER/bin:$PATH
 >>>>>>> Removed absolute rvm versioning, updated printout instructions and added update flag
 
+>>>>>>> Added test and fix for ruby versioning bug
+=======
 >>>>>>> Added test and fix for ruby versioning bug
 fi
 
