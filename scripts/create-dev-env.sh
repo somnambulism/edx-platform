@@ -415,6 +415,7 @@ fi
 if [[ $systempkgs ]]; then
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     mkvirtualenv -q -a "$WORKON_HOME" --system-site-packages edx-platform || {
 =======
     mkvirtualenv -a "$PYTHON_DIR" --system-site-packages edx-platform || {
@@ -422,12 +423,16 @@ if [[ $systempkgs ]]; then
 =======
     mkvirtualenv -a "$HOME/.virtualenvs" --system-site-packages edx-platform || {
 >>>>>>> Removed absolute rvm versioning, updated printout instructions and added update flag
+=======
+    mkvirtualenv -a "$PYTHON_DIR" --system-site-packages edx-platform || {
+>>>>>>> Changed hard-coded virtualenv location to allow for easier bash script editing
       error "mkvirtualenv exited with a non-zero error"
       return 1
     }
 else
     # default behavior for virtualenv>1.7 is
     # --no-site-packages
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     mkvirtualenv -q -a "$WORKON_HOME" edx-platform || {
@@ -437,6 +442,9 @@ else
 =======
     mkvirtualenv -a "$HOME/.virtualenvs" edx-platform || {
 >>>>>>> Removed absolute rvm versioning, updated printout instructions and added update flag
+=======
+    mkvirtualenv -a "$PYTHON_DIR" edx-platform || {
+>>>>>>> Changed hard-coded virtualenv location to allow for easier bash script editing
       error "mkvirtualenv exited with a non-zero error"
       return 1
     }
@@ -470,6 +478,7 @@ DISTRIBUTE_VER="0.6.28"
 output "Building Distribute"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 SITE_PACKAGES="$WORKON_HOME/edx-platform/lib/python2.7/site-packages"
 =======
 SITE_PACKAGES="$PYTHON_DIR/edx-platform/lib/python2.7/site-packages"
@@ -477,6 +486,9 @@ SITE_PACKAGES="$PYTHON_DIR/edx-platform/lib/python2.7/site-packages"
 =======
 SITE_PACKAGES="$HOME/.virtualenvs/edx-platform/lib/python2.7/site-packages"
 >>>>>>> Removed absolute rvm versioning, updated printout instructions and added update flag
+=======
+SITE_PACKAGES="$PYTHON_DIR/edx-platform/lib/python2.7/site-packages"
+>>>>>>> Changed hard-coded virtualenv location to allow for easier bash script editing
 cd "$SITE_PACKAGES"
 curl -O http://pypi.python.org/packages/source/d/distribute/distribute-${DISTRIBUTE_VER}.tar.gz
 tar -xzvf distribute-${DISTRIBUTE_VER}.tar.gz
