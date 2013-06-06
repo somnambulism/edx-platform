@@ -53,6 +53,7 @@ usage() {
             -s        give access to global site-packages for virtualenv
             -v        set -x + spew
             -h        this
+            -u        run update commands at the end of the script
 
 EO
     info
@@ -173,6 +174,10 @@ while true; do
         -h)
             usage
             exit 0
+            ;;
+        -u)
+            update=true
+            shift
             ;;
         --)
             shift
@@ -571,6 +576,7 @@ if [[ "${CURRENT_RUBY#*$CLEAN_RUBY_VER}" != "$CURRENT_RUBY" ]]; then
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             export PATH=$HOME/.rvm/rubies/ruby-$RUBY_VER/bin:\$PATH
 
             Assuming you don't have a custom rvm installation, if you do have a custom rvm, 
@@ -593,6 +599,12 @@ if [[ "${CURRENT_RUBY#*$CLEAN_RUBY_VER}" != "$CURRENT_RUBY" ]]; then
             Assuming you don't have a custom rvm installation, if you do have a custom rvm, 
             then just make sure that the very of ruby you're using is 1.9.3-p374.
 >>>>>>> Added test and fix for ruby versioning bug
+=======
+            export PATH=$HOME/.rvm/rubies/ruby-$RUBY_VER/bin:\$PATH
+
+            Assuming you don't have a custom rvm installation, if you do have a custom rvm, 
+            then just make sure that the very of ruby you're using is $RUBY_VER.
+>>>>>>> Removed absolute rvm versioning, updated printout instructions and added update flag
 
             Press enter to continue and try the quick fix, or press control-C to abort"
 
@@ -601,6 +613,7 @@ if [[ "${CURRENT_RUBY#*$CLEAN_RUBY_VER}" != "$CURRENT_RUBY" ]]; then
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   export PATH=$HOME/.rvm/rubies/ruby-$RUBY_VER/bin:$PATH
 =======
   export PATH=$HOME/.rvm/rubies/ruby-1.9.3-p374/bin:$PATH
@@ -610,6 +623,9 @@ if [[ "${CURRENT_RUBY#*$CLEAN_RUBY_VER}" != "$CURRENT_RUBY" ]]; then
 =======
   export PATH=$HOME/.rvm/rubies/ruby-1.9.3-p374/bin:$PATH
 >>>>>>> Added test and fix for ruby versioning bug
+=======
+  export PATH=$HOME/.rvm/rubies/ruby-$RUBY_VER/bin:$PATH
+>>>>>>> Removed absolute rvm versioning, updated printout instructions and added update flag
 
 >>>>>>> Added test and fix for ruby versioning bug
 fi
@@ -625,10 +641,13 @@ mkdir -p "$BASE/data"
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ./manage.py lms syncdb --noinput --migrate
 ./manage.py cms syncdb --noinput --migrate
 
 =======
+=======
+>>>>>>> Removed absolute rvm versioning, updated printout instructions and added update flag
 =======
 >>>>>>> Removed absolute rvm versioning, updated printout instructions and added update flag
 if [[ $update ]]; then
@@ -636,6 +655,7 @@ if [[ $update ]]; then
   rake django-admin[migrate]
   rake cms:update_templates
 fi
+<<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> Removed absolute rvm versioning, updated printout instructions and added update flag
 =======
@@ -645,6 +665,8 @@ rake django-admin[syncdb]
 rake django-admin[migrate]
 rake cms:update_templates
 >>>>>>> Added test and fix for ruby versioning bug
+=======
+>>>>>>> Removed absolute rvm versioning, updated printout instructions and added update flag
 # Configure Git
 
 output "Fixing your git default settings"
@@ -666,12 +688,16 @@ cat<<END
    Then, every time you're ready to work on the project, just run
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         $ source ~/.virtualenvs/edx-platform/bin/activate
 <<<<<<< HEAD
 =======
 =======
         $ workon mitx
 >>>>>>> Added test and fix for ruby versioning bug
+=======
+        $ source ~/.virtualenvs/edx-platform/bin/activate
+>>>>>>> Removed absolute rvm versioning, updated printout instructions and added update flag
 
    To initialize Django
 
