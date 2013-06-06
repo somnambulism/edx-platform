@@ -409,14 +409,22 @@ fi
 # Create edX virtualenv and link it to repo
 # virtualenvwrapper automatically sources the activation script
 if [[ $systempkgs ]]; then
+<<<<<<< HEAD
     mkvirtualenv -q -a "$WORKON_HOME" --system-site-packages edx-platform || {
+=======
+    mkvirtualenv -a "$PYTHON_DIR" --system-site-packages edx-platform || {
+>>>>>>> Changed hard-coded virtualenv location to allow for easier bash script editing
       error "mkvirtualenv exited with a non-zero error"
       return 1
     }
 else
     # default behavior for virtualenv>1.7 is
     # --no-site-packages
+<<<<<<< HEAD
     mkvirtualenv -q -a "$WORKON_HOME" edx-platform || {
+=======
+    mkvirtualenv -a "$PYTHON_DIR" edx-platform || {
+>>>>>>> Changed hard-coded virtualenv location to allow for easier bash script editing
       error "mkvirtualenv exited with a non-zero error"
       return 1
     }
@@ -448,7 +456,11 @@ fi
 # building correct version of distribute from source
 DISTRIBUTE_VER="0.6.28"
 output "Building Distribute"
+<<<<<<< HEAD
 SITE_PACKAGES="$WORKON_HOME/edx-platform/lib/python2.7/site-packages"
+=======
+SITE_PACKAGES="$PYTHON_DIR/edx-platform/lib/python2.7/site-packages"
+>>>>>>> Changed hard-coded virtualenv location to allow for easier bash script editing
 cd "$SITE_PACKAGES"
 curl -sSLO http://pypi.python.org/packages/source/d/distribute/distribute-${DISTRIBUTE_VER}.tar.gz
 tar -xzvf distribute-${DISTRIBUTE_VER}.tar.gz
