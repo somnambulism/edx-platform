@@ -127,7 +127,9 @@ urlpatterns += (
     # url(r'^reactivate/(?P<key>[^/]*)$', 'student.views.reactivation_email'),
 
     # Search
+<<<<<<< HEAD
     url(r'^search$', 'search.views.search')
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 =======
@@ -136,6 +138,12 @@ urlpatterns += (
 >>>>>>> Search working, basic functionality and styling in place, as well as csrf protection, snippeting, results highlighting, and spell correction
 =======
 >>>>>>> Refactored some code and added full elasticsearch module test suite
+=======
+=======
+    url(r'^search$', 'search.views.search'),
+
+>>>>>>> Search working, basic functionality and styling in place, as well as csrf protection, snippeting, results highlighting, and spell correction
+>>>>>>> Search working, basic functionality and styling in place, as well as csrf protection, snippeting, results highlighting, and spell correction
 )
 
 # Semi-static views only used by edX, not by themes
