@@ -135,6 +135,7 @@ urlpatterns += (
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     url(r'^search$', 'search.views.search')
 =======
     url(r'^search$', 'search.views.search'),
@@ -147,6 +148,8 @@ urlpatterns += (
 =======
 >>>>>>> Made prettier, added requirements, and included main edX page
 =======
+=======
+>>>>>>> Refactored some code and added full elasticsearch module test suite
 =======
 >>>>>>> Search working, basic functionality and styling in place, as well as csrf protection, snippeting, results highlighting, and spell correction
 >>>>>>> Search working, basic functionality and styling in place, as well as csrf protection, snippeting, results highlighting, and spell correction
@@ -163,7 +166,13 @@ urlpatterns += (
     url(r'^search$', 'search.views.search'),
 >>>>>>> Search working, basic functionality and styling in place, as well as csrf protection, snippeting, results highlighting, and spell correction
 >>>>>>> Search working, basic functionality and styling in place, as well as csrf protection, snippeting, results highlighting, and spell correction
+<<<<<<< HEAD
 >>>>>>> Search working, basic functionality and styling in place, as well as csrf protection, snippeting, results highlighting, and spell correction
+=======
+=======
+    url(r'^search$', 'search.views.search')
+>>>>>>> Refactored some code and added full elasticsearch module test suite
+>>>>>>> Refactored some code and added full elasticsearch module test suite
 )
 
 # Semi-static views only used by edX, not by themes
