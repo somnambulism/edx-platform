@@ -131,11 +131,15 @@ urlpatterns += (
 
     # Search
 <<<<<<< HEAD
+<<<<<<< HEAD
     url(r'^search$', 'search.views.search')
 =======
     url(r'^search$', 'search.views.search'),
     url(r'^find/$', 'search.views.find')
 >>>>>>> Search working, basic functionality and styling in place, as well as csrf protection, snippeting, results highlighting, and spell correction
+=======
+    url(r'^search$', 'search.views.search')
+>>>>>>> Made prettier, added requirements, and included main edX page
 )
 
 # Semi-static views only used by edX, not by themes
