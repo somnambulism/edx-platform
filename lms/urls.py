@@ -122,10 +122,13 @@ urlpatterns += (
     (r'^favicon\.ico$', 'django.views.generic.simple.redirect_to', {'url': '/static/images/favicon.ico'}),
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     url(r'^submit_feedback$', 'util.views.submit_feedback_via_zendesk'),
 
 >>>>>>> Search working, basic functionality and styling in place, as well as csrf protection, snippeting, results highlighting, and spell correction
+=======
+>>>>>>> search result vertical linking in place, mongo tree traversal also working
     # TODO: These urls no longer work. They need to be updated before they are re-enabled
     # url(r'^reactivate/(?P<key>[^/]*)$', 'student.views.reactivation_email'),
 
@@ -136,7 +139,10 @@ urlpatterns += (
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     url(r'^search$', 'search.views.search')
+=======
+>>>>>>> search result vertical linking in place, mongo tree traversal also working
 =======
     url(r'^search$', 'search.views.search'),
     url(r'^find/$', 'search.views.find')
@@ -172,7 +178,13 @@ urlpatterns += (
 =======
     url(r'^search$', 'search.views.search')
 >>>>>>> Refactored some code and added full elasticsearch module test suite
+<<<<<<< HEAD
 >>>>>>> Refactored some code and added full elasticsearch module test suite
+=======
+=======
+    url(r'^search$', 'search.views.search')
+>>>>>>> search result vertical linking in place, mongo tree traversal also working
+>>>>>>> search result vertical linking in place, mongo tree traversal also working
 )
 
 # Semi-static views only used by edX, not by themes
