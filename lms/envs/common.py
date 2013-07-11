@@ -72,7 +72,7 @@ MITX_FEATURES = {
     'ENABLE_TEXTBOOK': True,
     'ENABLE_DISCUSSION_SERVICE': True,
     # discussion home panel, which includes a subscription on/off setting for discussion digest emails.
-    # this should remain off in production until digest notifications are online. 
+    # this should remain off in production until digest notifications are online.
     'ENABLE_DISCUSSION_HOME_PANEL': True,
 
     'ENABLE_PSYCHOMETRICS': False,  # real-time psychometrics (eg item response theory analysis in instructor dashboard)
@@ -143,6 +143,9 @@ MITX_FEATURES = {
 
     # Enable instructor dash to submit background tasks
     'ENABLE_INSTRUCTOR_BACKGROUND_TASKS': True,
+
+    # Enable instructor dash beta version link
+    'ENABLE_INSTRUCTOR_BETA_DASHBOARD': False,
 
     # Allow use of the hint managment instructor view.
     'ENABLE_HINTER_INSTRUCTOR_VIEW': False,
