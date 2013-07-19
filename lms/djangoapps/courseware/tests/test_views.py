@@ -144,7 +144,6 @@ class ViewsTestCase(TestCase):
         self.assertEquals(chat_settings['room'], "a-b-c_class")
         self.assertEquals(chat_settings['username'], "johndoe@%s" % domain)
 
-        # TODO: this needs to be changed once we figure out how to
-        #       generate/store a real password.
+        # Does this go through the mysql table like it should?
         self.assertEquals(chat_settings['password'], "johndoe@%s" % domain)
 

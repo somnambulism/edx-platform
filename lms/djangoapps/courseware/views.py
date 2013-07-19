@@ -256,12 +256,8 @@ def chat_settings(course, user):
             USER=user.username, DOMAIN=domain
         ),
 
-        # TODO: clearly this needs to be something other than the username
-        #       should also be something that's not necessarily tied to a
-        #       particular course
-        'password': "{USER}@{DOMAIN}".format(
-            USER=user.username, DOMAIN=domain
-        ),
+        # This should be unused now that we're passing authentication through mysql
+        'password': "{USER}@{DOMAIN}".format(USER=user.username, DOMAIN=domain),
     }
 
 
