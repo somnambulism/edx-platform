@@ -689,6 +689,42 @@ def progress(request, course_id, student_id=None):
 
 
 @login_required
+def badges(request, course_id):
+    """
+    Displays a student's earned badges for a specific course.
+    """
+    import json
+    import urllib2
+    import os
+
+    course = get_course_with_access(request.user, course_id, 'load', depth=None)
+
+    recipient_id = request.user.email
+    recipients_url = "http://0.0.0.0:8002/recipients"
+    badges_url = os.path.join(recipients_url, recipient_id)
+    suffix = "?course_id=" + course.number  # TODO: either use pk here, or update service to allow filter-by-course-name
+    badges_url += suffix
+
+    def read(url):
+        f = urllib2.urlopen(url)
+        return json.loads(f.read())
+
+    #NOTE: Currently recipients/recipient_id returns a list of badge urls
+    #If in the future the API is changed to return a collection of badges directly, modify this.
+    badge_urls = read(badges_url)
+    print badge_urls
+
+    badges = [read(url) for url in badge_urls['badges']]
+
+    context = {
+        'course': course,
+        'student': request.user,
+        'badges': badges
+    }
+
+    return render_to_response('courseware/badges.html', context)
+
+@login_required
 def submission_history(request, course_id, student_username, location):
     """Render an HTML fragment (meant for inclusion elsewhere) that renders a
     history of all state changes made by this user for this problem location.

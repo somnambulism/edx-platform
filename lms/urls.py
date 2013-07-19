@@ -257,6 +257,9 @@ if settings.COURSEWARE_ENABLED:
         url(r'^courses/(?P<course_id>[^/]+/[^/]+/[^/]+)/progress/(?P<student_id>[^/]*)/$',
             'courseware.views.progress', name="student_progress"),
 
+        url(r'^courses/(?P<course_id>[^/]+/[^/]+/[^/]+)/badges$',
+            'courseware.views.badges', name="badges"),
+
         # For the instructor
         url(r'^courses/(?P<course_id>[^/]+/[^/]+/[^/]+)/instructor$',
             'instructor.views.instructor_dashboard', name="instructor_dashboard"),
