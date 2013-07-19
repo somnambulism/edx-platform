@@ -706,6 +706,7 @@ def badges(request, course_id):
     badges_url += suffix
 
     def read(url):
+        print url
         f = urllib2.urlopen(url)
         return json.loads(f.read())
 
@@ -714,12 +715,17 @@ def badges(request, course_id):
     badge_urls = read(badges_url)
     print badge_urls
 
-    badges = [read(url) for url in badge_urls['badges']]
+    earned_badges = [read(url) for url in badge_urls['badges']]
+
+    #TODO: Make this be the set of all badges for this course which are enabled, minus those that are in badges
+    unlockable_badges = earned_badges
 
     context = {
         'course': course,
         'student': request.user,
-        'badges': badges
+        'earned_badges': earned_badges,
+        'unlockable_badges': unlockable_badges,
+        'badge_urls': json.dumps(badge_urls['badges']),
     }
 
     return render_to_response('courseware/badges.html', context)
