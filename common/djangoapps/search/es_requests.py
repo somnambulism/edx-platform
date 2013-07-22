@@ -16,11 +16,148 @@ from wand.exceptions import DelegateError, MissingDelegateError, CorruptImageErr
 from xhtml2pdf import pisa as pisa
 
 
+class ElasticDatabase:
+
+    def __init__(self, url, index_settings_file=os.getcwd()+"/common/djangoapps/search/settings.json"):
+        """
+        Will initialize elastic search object with specified indices
+        specifically the url should be something of the form `http://localhost:9200`
+        importantly do not include a slash at the end of the url name."""
+
+        self.url = url
+        self.index_settings = json.loads(open(index_settings_file, 'rb').read())
+
+    def setup_type(self, index, type_, json_mapping):
+        """
+        json_mapping should be a dictionary starting at the properties level of a mapping.
+
+        The type level will be added, so if you include it things will break. The purpose of this
+        is to encourage loose coupling between types and mappings for better code
+        """
+
+        full_url = "/".join([self.url, index, type_]) + "/"
+        dictionary = json.loads(open(json_mapping).read())
+        print dictionary
+        return requests.post(full_url, data=json.dumps(dictionary))
+
+    def has_index(self, index):
+        """Checks to see if a given index exists in the database returns existance boolean,
+        If this returns something other than a 200 or a 404 something is wrong and so we error"""
+        full_url = "/".join([self.url, index])
+        status = requests.head(full_url).status_code
+        if status == 200:
+            return True
+        elif status == 404:
+            return False
+        else:
+            print "Got an unexpected reponse code: " + str(status)
+            raise
+
+    def has_type(self, index, type_):
+        """Same as has_index, but for a given type"""
+        full_url = "/".join([self.url, index, type_])
+        status = requests.head(full_url).status_code
+        if status == 200:
+            return True
+        elif status == 404:
+            return False
+        else:
+            print "Got an unexpected response code: " + str(status)
+            raise
+
+    def index_directory_files(self, directory, index, type_, silent=False, **kwargs):
+        """Starts a pygrep instance and indexes all files in the given directory
+        Available kwargs are file_ending, callback, and conserve_kwargs.
+        Respectively these allow you to choose the file ending to be indexed, the
+        callback used to do the indexing, and whether or not you would like to pass
+        additional kwargs to the callback function."""
+        # Needs to be lazily evaluatedy
+        file_ending = kwargs.get("file_ending", ".srt.sjson")
+        callback = kwargs.get("callback", self.index_transcript)
+        conserve_kwargs = kwargs.get("conserve_kwargs", False)
+        directoryCrawler = PyGrep(directory)
+        all_files = directoryCrawler.grab_all_files_with_ending(file_ending)
+        responses = []
+        for file_list in all_files:
+            for file_ in file_list:
+                if conserve_kwargs:
+                    responses.append(callback(index, type_, file_, silent, kwargs))
+                else:
+                    responses.append(callback(index, type_, file_, silent))
+        return responses
+
+    def index_transcript(self, index, type_, transcript_file, silent=False, id_=None):
+        """opens and indexes the given transcript file as the given index, type, and id"""
+        file_uuid = transcript_file.rsplit("/")[-1][:-10]
+        transcript = open(transcript_file, 'rb').read()
+        try:
+            searchable_text = " ".join(filter(None, json.loads(transcript)["text"])).replace("\n", " ")
+        except ValueError:
+            if silent:
+                searchable_text = "INVALID JSON"
+            else:
+                raise
+        data = {"searchable_text": searchable_text, "uuid": file_uuid}
+        if not id_:
+            return self.index_data(index, type_, data)._content
+        else:
+            return self.index_data(index, type_, data, id_=id_)
+        return self.index_data(index, type_, id_, data)._content
+
+    def setup_index(self, index):
+        """Creates a new elasticsearch index, returns the response it gets"""
+        full_url = "/".join([self.url, index]) + "/"
+        return requests.put(full_url, data=json.dumps(self.index_settings))
+
+    def add_index_settings(self, index, index_settings=None):
+        """Allows the editing of an index's settings"""
+        index_settings = index_settings or self.index_settings
+        full_url = "/".join([self.url, index]) + "/"
+        #closing the index so it can be changed
+        requests.post(full_url+"/_close")
+        response = requests.post(full_url+"/", data=json.dumps(index_settings))
+        #reopening the index so it can be read
+        requests.post(full_url+"/_open")
+        return response
+
+    def index_data(self, index, type_, data, id_=None):
+        """Data should be passed in as a dictionary, assumes it matches the given mapping"""
+        if not id_:
+            full_url = "/".join([self.url, index, type_]) + "/"
+        else:
+            full_url = "/".join([self.url, index, type_, id_])
+        response = requests.post(full_url, json.dumps(data))
+        return response
+
+    def get_data(self, index, type_, id_):
+        full_url = "/".join([self.url, index, type_, id_])
+        return requests.get(full_url)
+
+    def get_index_settings(self, index):
+        """Returns the current settings of a given index"""
+        full_url = "/".join([self.url, index, "_settings"])
+        return json.loads(requests.get(full_url)._content)
+
+    def delete_index(self, index):
+        full_url = "/".join([self.url, index])
+        return requests.delete(full_url)
+
+    def delete_type(self, index, type_):
+        full_url = "/".join([self.url, index, type_])
+        return requests.delete(full_url)
+
+    def get_type_mapping(self, index, type_):
+        """Return the current mapping of the indicated type"""
+        full_url = "/".join([self.url, index, type_, "_mapping"])
+        return json.loads(requests.get(full_url)._content)
+
+
 class MongoIndexer:
 
     def __init__(
         self, host='localhost', port=27017, content_database='xcontent', file_collection="fs.files",
-        chunk_collection="fs.chunks", module_database='xmodule', module_collection='modulestore'
+        chunk_collection="fs.chunks", module_database='xmodule', module_collection='modulestore',
+        es_instance=ElasticDatabase("http://localhost:9200")
     ):
         self.host = host
         self.port = port
@@ -45,6 +182,7 @@ class MongoIndexer:
         self.file_collection = self.content_db[file_collection]
         self.chunk_collection = self.content_db[chunk_collection]
         self.module_collection = self.module_db[module_collection]
+        self.es_instance = es_instance
 
     def find_files_with_type(self, file_ending):
         """Returns a cursor for content files matching given type"""
@@ -64,14 +202,29 @@ class MongoIndexer:
     def find_asset_with_name(self, name):
         return self.chunk_collection.find_one({"files_id.category": "asset", "files_id.name": name})
 
+<<<<<<< HEAD
     def find_transcript_content(self, mongo_element):
         """Finds the corresponding chunk to the file element from a cursor similar to that from find_transcripts"""
         filename = mongo_element["_id"]["name"]
         database_object = self.chunk_collection.find_one({"files_id.name": filename})
+=======
+    def find_modules_for_course(self, course):
+        return self.module_collection.find({"_id.course": course})
+
+    def find_transcript_for_video_module(self, video_module):
+        data = video_module.get("definition", {"data": ""}).get("data", "")
+        uuid = re.sub(r"(1\.0:)(.*?)(,1\.25)", r'\2', data)
+        name_pattern = re.compile(".*?"+uuid+".*?")
+        chunk = self.chunk_collection.find_one({"files_id.name": name_pattern})
+>>>>>>> Added functionality for course indexing from studio
         try:
-            return filter(None, json.loads(database_object["data"].decode('utf-8', "ignore"))["text"])
+            return filter(None, json.loads(chunk["data"].decode('utf-8', "ignore"))["text"])
         except ValueError:
+<<<<<<< HEAD
             return ["n/a"]
+=======
+            return [""]
+>>>>>>> Added functionality for course indexing from studio
 
     def pdf_to_text(self, mongo_element):
         onlyAscii = lambda s: "".join(c for c in s if ord(c) < 128)
@@ -94,17 +247,11 @@ class MongoIndexer:
         try:
             paragraphs = " ".join([text for text in re.findall("<p>(.*?)</p>", data) if text is not "Explanation"])
         except TypeError:
-            paragraphs = "n/a"
+            paragraphs = ""
         cleaned_text = re.sub("\\(.*?\\)", "", paragraphs).replace("\\", "")
         remove_tags = re.sub("<[a-zA-Z0-9/\.\= \"_-]+>", "", cleaned_text)
         remove_repetitions = re.sub(r"(.)\1{4,}", "", remove_tags)
         return remove_repetitions
-
-    def module_for_uuid(self, transcript_uuid):
-        """Given the transcript uuid found from the xcontent database, returns the mongo document for the video"""
-        regex_pattern = re.compile(".*?"+str(transcript_uuid)+".*?")
-        video_module = self.module_collection.find_one({"definition.data": regex_pattern})
-        return video_module
 
     def uuid_from_file_name(self, file_name):
         """Returns a youtube uuid given the filename of a transcript"""
@@ -114,7 +261,9 @@ class MongoIndexer:
             file_name = file_name[2:]
         return file_name[:file_name.find(".")]
 
-    def thumbnail_from_uuid(self, uuid):
+    def thumbnail_from_video_module(self, video_module):
+        data = video_module.get("definition", {"data": ""}).get("data", "")
+        uuid = re.sub(r"(1\.0:)(.*?)(,1\.25)", r'\2', data)
         image = urllib.urlopen("http://img.youtube.com/vi/" + uuid + "/0.jpg")
         return base64.b64encode(image.read())
 
@@ -164,6 +313,7 @@ class MongoIndexer:
         })
         return course_element["_id"]["name"]
 
+<<<<<<< HEAD
     def index_all_pdfs(self, es_instance, index):
         cursor = self.find_categories_with_regex("html", re.compile(".*?/asset/.*?\.pdf.*?"))
         for i in range(0, cursor.count()):
@@ -181,9 +331,46 @@ class MongoIndexer:
             if not asset:
                 continue
             searchable_text = self.pdf_to_text(asset)
+=======
+    def basic_dict(self, mongo_module, type):
+        """Returns the part of the es schema that is the same for every object."""
+        id = json.dumps(mongo_module["_id"])
+        hash = hashlib.sha1(id).hexdigest()
+        display_name = (
+            mongo_module.get("metadata", {"display_name": ""}).get("display_name", "") +
+            " (" + mongo_module["_id"]["course"] + ")"
+        )
+        searchable_text = self.get_searchable_text(mongo_module, type)
+        thumbnail = self.get_thumbnail(mongo_module, type)
+        return {
+            "id": id, "hash": hash, "display_name": display_name,
+            "searchable_text": searchable_text, "thumbnail": thumbnail
+        }
+
+    def get_searchable_text(self, mongo_module, type):
+        """Returns searchable text for a module. Defined for a module only"""
+        if type.lower() == "pdf":
+            name = re.sub(r'(.*?)(/asset/)(.*?)(\.pdf)(.*?)$', r'\3'+".pdf", mongo_module["definition"]["data"])
+            asset = self.find_asset_with_name(name)
+            if not asset:
+                searchable_text = ""
+            else:
+                searchable_text = self.pdf_to_text(asset)
+        elif type.lower() == "problem":
+            searchable_text = self.searchable_text_from_problem_data(mongo_module)
+        elif type.lower() == "transcript":
+            searchable_text = self.find_transcript_for_video_module(mongo_module, type)
+        return searchable_text
+
+    def get_thumbnail(self, mongo_module, type):
+        if type.lower() == "pdf":
+>>>>>>> Added functionality for course indexing from studio
             try:
+                name = re.sub(r'(.*?)(/asset/)(.*?)(\.pdf)(.*?)$', r'\3'+".pdf", mongo_module["definition"]["data"])
+                asset = self.find_asset_with_name(name)
                 thumbnail = self.thumbnail_from_pdf(asset["data"].__str__())
             except (DelegateError, MissingDelegateError, CorruptImageError):
+<<<<<<< HEAD
                 print "Slide: " + uuid + " is corrupt."
                 continue
             data = {
@@ -191,11 +378,27 @@ class MongoIndexer:
                 "searchable_text": searchable_text, "display_name": display_name, "url": url, "thumbnail": thumbnail
             }
             print es_instance.index_data(index, course, data)._content
+=======
+                thumbnail = ""
+        elif type.lower() == "problem":
+            thumbnail = self.thumbnail_from_html(mongo_module["definition"]["data"])
+        elif type.lower() == "transcript":
+            thumbnail = self.thumbnail_from_video_module(mongo_module)
+        return thumbnail
 
-    def index_all_problems(self, es_instance, index):
-        cursor = self.find_modules_by_category("problem")
-        for i in range(0, cursor.count()):
+    def index_all_pdfs(self, index):
+        cursor = self.find_categories_with_regex("html", re.compile(".*?/asset/.*?\.pdf.*?"))
+        for i in range(cursor.count()):
             item = cursor.next()
+            data = self.basic_dict(item, "pdf")
+            print self.es_instance.index_data(index, item["_id"]["course"], data, data["hash"])._content
+>>>>>>> Added functionality for course indexing from studio
+
+    def index_all_problems(self, index):
+        cursor = self.find_modules_by_category("problem")
+        for i in range(cursor.count()):
+            item = cursor.next()
+<<<<<<< HEAD
             course = item["_id"]["course"]
             org = item["_id"]["org"]
             uuid = item["_id"]["name"]
@@ -318,74 +521,42 @@ additional kwargs to the callback function."""
             for file_ in file_list:
                 if conserve_kwargs:
                     responses.append(callback(index, type_, file_, silent, kwargs))
+=======
+            data = self.basic_dict(item, "problem")
+            print self.es_instance.index_data(index, item["_id"]["course"], data, data["hash"])._content
+
+    def index_all_transcripts(self, index):
+        cursor = self.find_modules_by_category("video")
+        for i in range(cursor.count()):
+            item = cursor.next()
+            data = self.basic_dict(item, "transcript")
+            print self.es_instance.index_data(index, item["_id"]["course"], data, data["hash"])._content
+
+    def index_course(self, course):
+        cursor = self.find_modules_for_course(course)
+        for i in range(cursor.count()):
+            item = cursor.next()
+            category = item["_id"]["category"].lower().strip()
+            data = {}
+            index = ""
+            if category == "video":
+                data = self.basic_dict(item, "transcript")
+                index = "transcript-index"
+            elif category == "problem":
+                data = self.basic_dict(item, "problem")
+                index = "problem-index"
+            elif category == "html":
+                pattern = re.compile(".*?/asset/.*?\.pdf.*?")
+                if pattern.match(item["definition"]["data"]):
+                    data = self.basic_dict(item, "pdf")
+>>>>>>> Added functionality for course indexing from studio
                 else:
-                    responses.append(callback(index, type_, file_, silent))
-        return responses
-
-    def index_transcript(self, index, type_, transcript_file, silent=False, id_=None):
-        """opens and indexes the given transcript file as the given index, type, and id"""
-        file_uuid = transcript_file.rsplit("/")[-1][:-10]
-        transcript = open(transcript_file, 'rb').read()
-        try:
-            searchable_text = " ".join(filter(None, json.loads(transcript)["text"])).replace("\n", " ")
-        except ValueError:
-            if silent:
-                searchable_text = "INVALID JSON"
+                    data = {"test": ""}
+                index = "pdf-index"
             else:
-                raise
-        data = {"searchable_text": searchable_text, "uuid": file_uuid}
-        if not id_:
-            return self.index_data(index, type_, data)._content
-        else:
-            return self.index_data(index, type_, data, id_=id_)
-        return self.index_data(index, type_, id_, data)._content
-
-    def setup_index(self, index):
-        """Creates a new elasticsearch index, returns the response it gets"""
-        full_url = "/".join([self.url, index]) + "/"
-        return requests.put(full_url, data=json.dumps(self.index_settings))
-
-    def add_index_settings(self, index, index_settings=None):
-        """Allows the editing of an index's settings"""
-        index_settings = index_settings or self.index_settings
-        full_url = "/".join([self.url, index]) + "/"
-        #closing the index so it can be changed
-        requests.post(full_url+"/_close")
-        response = requests.post(full_url+"/", data=json.dumps(index_settings))
-        #reopening the index so it can be read
-        requests.post(full_url+"/_open")
-        return response
-
-    def index_data(self, index, type_, data, id_=None):
-        """Data should be passed in as a dictionary, assumes it matches the given mapping"""
-        if not id_:
-            full_url = "/".join([self.url, index, type_]) + "/"
-        else:
-            full_url = "/".join([self.url, index, type_, id_])
-        response = requests.post(full_url, json.dumps(data))
-        return response
-
-    def get_data(self, index, type_, id_):
-        full_url = "/".join([self.url, index, type_, id_])
-        return requests.get(full_url)
-
-    def get_index_settings(self, index):
-        """Returns the current settings of a given index"""
-        full_url = "/".join([self.url, index, "_settings"])
-        return json.loads(requests.get(full_url)._content)
-
-    def delete_index(self, index):
-        full_url = "/".join([self.url, index])
-        return requests.delete(full_url)
-
-    def delete_type(self, index, type_):
-        full_url = "/".join([self.url, index, type_])
-        return requests.delete(full_url)
-
-    def get_type_mapping(self, index, type_):
-        """Return the current mapping of the indicated type"""
-        full_url = "/".join([self.url, index, type_, "_mapping"])
-        return json.loads(requests.get(full_url)._content)
+                continue
+            if filter(None, data.values()) == data.values():
+                print self.es_instance.index_data(index, item["_id"]["course"], data, data["hash"])._content
 
 
 class PyGrep:
@@ -443,14 +614,20 @@ Set to 50k by default"""
                 dictionary.write(word+"\n")
 
 
+<<<<<<< HEAD
 #url = "http://localhost:9200"
 #settings_file = "settings.json"
+=======
+url = "http://localhost:9200"
+settings_file = os.getcwd() + "/common/djangoapps/search/settings.json"
+>>>>>>> Added functionality for course indexing from studio
 
 mongo = MongoIndexer()
 
 
 test = ElasticDatabase(url, settings_file)
 dictionary = EnchantDictionary(test)
+<<<<<<< HEAD
 print test.delete_index("pdf-index")
 print test.delete_index("transcript-index")
 print test.delete_index("problem-index")
@@ -458,6 +635,16 @@ mongo.index_all_pdfs(test, "pdf-index")
 mongo.index_all_transcripts(test, "transcript-index")
 mongo.index_all_problems(test, "problem-index")
 dictionary.produce_dictionary("pyenchant_corpus.txt", max_results=500000)
+=======
+
+#print test.delete_index("pdf-index")
+#print test.delete_index("transcript-index")
+#print test.delete_index("problem-index")
+#mongo.index_all_pdfs(test, "pdf-index")
+#mongo.index_all_transcripts(test, "transcript-index")
+#mongo.index_all_problems(test, "problem-index")
+#dictionary.produce_dictionary("pyenchant_corpus.txt", max_results=500000)
+>>>>>>> Added functionality for course indexing from studio
 
 #print test.setup_type("transcript", "cleaning", mapping)._content
 #print test.get_type_mapping("transcript-index", "2-1x")
