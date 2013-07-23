@@ -178,6 +178,17 @@ def _combined_open_ended_grading(tab, user, course, active_page):
         return tab
     return []
 
+
+def _badges(tab, user, course, active_page):
+    if user.is_authenticated():
+        link = reverse('badges', args=[course.id])
+        tab_name = "Badges"
+
+        tab = [CourseTab(tab_name, link, active_page == 'badges')]
+        return tab
+    return []
+
+
 def _notes_tab(tab, user, course, active_page):
     if user.is_authenticated() and settings.MITX_FEATURES.get('ENABLE_STUDENT_NOTES'):
         link = reverse('notes', args=[course.id])
@@ -225,6 +236,7 @@ VALID_TAB_TYPES = {
     'peer_grading': TabImpl(null_validator, _peer_grading),
     'staff_grading': TabImpl(null_validator, _staff_grading),
     'open_ended': TabImpl(null_validator, _combined_open_ended_grading),
+    'badges': TabImpl(null_validator, _badges),
     'notes': TabImpl(null_validator, _notes_tab)
     }
 
