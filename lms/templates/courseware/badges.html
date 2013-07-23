@@ -14,7 +14,6 @@
 <%! from xmodule.util.date_utils import get_default_time_display %>
 
 <%block name="js_extra">
-<!--<script type="text/javascript" src="${static.url('js/openbadges.issuer.js')}"></script>-->
 <script type="text/javascript" src="http://beta.openbadges.org/issuer.js"></script>
 </%block>
 
@@ -64,38 +63,40 @@ img.unlockable {
 }
 </style>
 
-<%include file="/courseware/course_navigation.html" args="active_page=''" />
+<%include file="/courseware/course_navigation.html" args="active_page='badges'" />
 
 <section class="container">
   <div class="profile-wrapper">
 
     <section class="course-info">
       <header>
-        <h1>Badges for <i>${course.display_name}</i></h1>
+        <h1>Badges for <i>${course.display_name}</i> (Prototype)</h1>
       </header>
-      <input type="button" id="badge_info_button" value="" style="float:right; width:150px; margin-left:20px" />
-      <p>
-        If you wish, you can export these badges to <a href="http://beta.openbadges.org/">Mozilla Backpack</a> to share them.
-      </p>
-      <br />
-      <div id="badge_info" style="padding-left:0px">
-      <hr />
-      <input type="button" id="badge_export" value="Export All" style="float:right; width:150px; margin-left:20px; background-color:rgb(29,157,217); color:white; background:rgb(29,157,217); text-shadow:0pt 1px 0pt rgb(7, 103, 148); border:1px solid rgb(13, 114, 162); box-shadow:0pt 1px 0pt 0pt rgb(97, 184, 225) inset;" />
-      <p>
-      These badges are <a href="http://openbadges.org/">Mozilla Open Badges</a>, which means you can save them in <a href="http://beta.openbadges.org/">Mozilla Backpack</a>, a separate website which stores badges. You can display and share the badges elsewhere on the Internet, along with any badges you collect from other websites.
-      <ol>
-        <li><p>
-          You will be prompted to create a Mozilla Persona account. Make sure to use your email address, <b>&lt;${student.email}&gt;</b>.
-        </p></li>
-        <li><p>
-          Visit <a href="http://beta.openbadges.org/">Mozilla Backpack</a> to view the exported badges.
-        </p></li>
-        <li><p>
-          Use Mozilla Backpack to sort your badges into collections and share links to those collections on other websites.
-        </p></li>
-      </ol></p>
-      </div>
+      %if len(unlockable_badgetypes) != 0 or len(earned_badges) != 0:
+        <input type="button" id="badge_info_button" value="" style="float:right; width:150px; margin-left:20px" />
+        <p>
+          If you wish, you can export these badges to <a href="http://beta.openbadges.org/">Mozilla Backpack</a> to share them.
+        </p>
+        <br />
+        <div id="badge_info">
+        <hr />
+        <input type="button" id="badge_export" value="Export All" style="float:right; width:150px; margin-left:20px; background-color:rgb(29,157,217); color:white; background:rgb(29,157,217); text-shadow:0pt 1px 0pt rgb(7, 103, 148); border:1px solid rgb(13, 114, 162); box-shadow:0pt 1px 0pt 0pt rgb(97, 184, 225) inset;" />
+        <p>
+        These badges are <a href="http://openbadges.org/">Mozilla Open Badges</a>, which means you can save them in <a href="http://beta.openbadges.org/">Mozilla Backpack</a>, a separate website which stores badges. You can display and share the badges elsewhere on the Internet, along with any badges you collect from other websites.
+        <ol>
+          <li><p>
+            You will be prompted to create a Mozilla Persona account. Make sure to use your <b>${student.email}</b> email address.
+          </p></li>
+          <li><p>
+            Visit <a href="http://beta.openbadges.org/">Mozilla Backpack</a> to view the exported badges.
+          </p></li>
+          <li><p>
+            Use Mozilla Backpack to sort your badges into collections which you can share on other websites.
+          </p></li>
+        </ol></p>
+        </div>
       <ol class="chapters">
+        %if len(earned_badges) != 0:
         <li>
           <h2>Earned</h2>
           <ol class="sections">
@@ -106,10 +107,13 @@ img.unlockable {
                   <td><img src="${badge['image']}" style="float:left; width:100px; margin-right:20px;" /></td>
                   <td>
                     <h3>${badge['badge']['name']}</h3>
-                    ${badge['badge']['description']}
                     <p>
+                    <b>${badge['badge']['description']} </b><br />
                       issued on <b>${badge['issued_on']}</b> by
                       <a href="${badge['badge']['issuer']['origin']}">${badge['badge']['issuer']['name']}</a>
+                      %if badge['badge'].get('criteria_text', None):
+                        <br /><i>${badge['badge']['criteria_text']}</i>
+                      %endif
                     </p>
                   </td>
                 </tr></table>
@@ -120,27 +124,40 @@ img.unlockable {
             %endfor
           </ol>
         </li>
+        %endif
+        %if len(unlockable_badgetypes) != 0:
         <li>
           <h2>Unlockable</h2>
           <ol class="sections">
-            %for i in range(len(unlockable_badges)):
-              <%badge = unlockable_badges[i]%>
+            %for i in range(len(unlockable_badgetypes)):
+              <%badgetype = unlockable_badgetypes[i]%>
               <li>
                 <table><tr>
-                  <td><img src="${badge['image']}" class="unlockable" style="float:left; width:100px; margin-right:20px;" /></td>
+                  <td><img src="${badgetype['image']}" class="unlockable" style="float:left; width:100px; margin-right:20px;" /></td>
                   <td>
-                    <h3>???</h3>
-                    ${badge['badge']['description']}
+                    <p>
+                    <i>
+                    %if badgetype.get('criteria_text', None):
+                        ${badgetype['criteria_text']}
+                    %else:
+
+                    %endif
+                    </i>
+                    </p>
                   </td>
                 </tr></table>
               </li>
-              %if i != len(unlockable_badges) - 1:
+              %if i != len(unlockable_badgetypes) - 1:
                 <hr />
               %endif
             %endfor
           </ol>
         </li>
+        %endif
       </ol>
+      %else:
+       <p>This course does not offer badges.</p>
+      %endif
 
     </section>
   </div>

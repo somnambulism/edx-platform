@@ -691,44 +691,73 @@ def progress(request, course_id, student_id=None):
 @login_required
 def badges(request, course_id):
     """
-    Displays a student's earned badges for a specific course.
+    Displays a student's earned badges for a specific course, or for the entire platform.
     """
-    import json
-    import urllib2
-    import os
 
-    course = get_course_with_access(request.user, course_id, 'load', depth=None)
+    import json
+    import os
+    import urllib2
+
+    #Important constants whose values might need updating every now and then
+    badge_service = "http://0.0.0.0:8002"
+    issuer_name = "test!edX"
 
     recipient_id = request.user.email
-    recipients_url = "http://0.0.0.0:8002/recipients"
-    badges_url = os.path.join(recipients_url, recipient_id)
-    suffix = "?course_id=" + course.number  # TODO: either use pk here, or update service to allow filter-by-course-name
-    badges_url += suffix
+    recipients_url = os.path.join(badge_service, "recipients", recipient_id)
 
     def read(url):
         print url
-        f = urllib2.urlopen(url)
-        return json.loads(f.read())
+        try:
+            f = urllib2.urlopen(url)
+            return json.loads(f.read())
+        except:
+            print "ERROR: URL NOT FOUND -- " + url
+            return {}
 
-    #NOTE: Currently recipients/recipient_id returns a list of badge urls
-    #If in the future the API is changed to return a collection of badges directly, modify this.
+    course = get_course_with_access(request.user, course_id, 'load', depth=None)
+
+    suffix = "?course_id=" + course.number
+    badges_url = os.path.join(recipients_url, "badges")
+    badges_url += suffix
+
+    course_url = os.path.join(badge_service, "courses", course.number)
+    unlockable_badgetypes_url = os.path.join(course_url, "badgetypes")
+
+    # NOTE: Currently recipients/recipient_id returns a list of badge urls
+    # If in the future the API is changed to return a collection of badges directly, modify this.
     badge_urls = read(badges_url)
-    print badge_urls
 
-    earned_badges = [read(url) for url in badge_urls['badges']]
+    earned_badges = [read(url) for url in badge_urls.get('badges', [])]
 
-    #TODO: Make this be the set of all badges for this course which are enabled, minus those that are in badges
-    unlockable_badges = earned_badges
+    earned_badges = [
+        badge
+        for badge in earned_badges
+        if not badge['revoked']
+    ]
+
+    unlockable_badgetype_urls = read(unlockable_badgetypes_url)
+    unlockable_badgetypes = [
+        read(url)
+        for url in unlockable_badgetype_urls.get('badgetypes', [])
+        if not url in [badge['badge']['href'] for badge in earned_badges]
+    ]
+
+    unlockable_badgetypes = [
+        badgetype
+        for badgetype in unlockable_badgetypes
+        if badgetype['is_enabled']
+    ]
 
     context = {
         'course': course,
         'student': request.user,
         'earned_badges': earned_badges,
-        'unlockable_badges': unlockable_badges,
-        'badge_urls': json.dumps(badge_urls['badges']),
+        'unlockable_badgetypes': unlockable_badgetypes,
+        'badge_urls': json.dumps(badge_urls.get('badges'), []),
     }
 
     return render_to_response('courseware/badges.html', context)
+
 
 @login_required
 def submission_history(request, course_id, student_username, location):

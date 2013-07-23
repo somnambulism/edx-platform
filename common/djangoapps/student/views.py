@@ -308,6 +308,121 @@ def dashboard(request):
     return render_to_response('dashboard.html', context)
 
 
+@login_required
+def profile(request):
+
+    #TODO: Eliminate unnecessary items. <,,~
+
+    user = request.user
+    enrollments = CourseEnrollment.objects.filter(user=user)
+
+    # Build our courses list for the user, but ignore any courses that no longer
+    # exist (because the course IDs have changed). Still, we don't delete those
+    # enrollments, because it could have been a data push snafu.
+    courses = []
+    for enrollment in enrollments:
+        try:
+            courses.append(course_from_id(enrollment.course_id))
+        except ItemNotFoundError:
+            log.error("User {0} enrolled in non-existent course {1}"
+                      .format(user.username, enrollment.course_id))
+
+    message = ""
+    if not user.is_active:
+        message = render_to_string('registration/activate_account_notice.html', {'email': user.email})
+
+    # Global staff can see what courses errored on their dashboard
+    staff_access = False
+    errored_courses = {}
+    if has_access(user, 'global', 'staff'):
+        # Show any courses that errored on load
+        staff_access = True
+        errored_courses = modulestore().get_errored_courses()
+
+    show_courseware_links_for = frozenset(course.id for course in courses
+                                          if has_access(request.user, course, 'load'))
+
+    cert_statuses = {course.id: cert_info(request.user, course) for course in courses}
+
+    exam_registrations = {course.id: exam_registration_info(request.user, course) for course in courses}
+
+    # Get the 3 most recent news
+    top_news = _get_news(top=3) if not settings.MITX_FEATURES.get('ENABLE_MKTG_SITE', False) else None
+
+    external_auth_map = None
+    try:
+        external_auth_map = ExternalAuthMap.objects.get(user=user)
+    except ExternalAuthMap.DoesNotExist:
+        pass
+
+    context = {'courses': courses,
+               'message': message,
+               'external_auth_map': external_auth_map,
+               'staff_access': staff_access,
+               'errored_courses': errored_courses,
+               'show_courseware_links_for': show_courseware_links_for,
+               'cert_statuses': cert_statuses,
+               'news': top_news,
+               'exam_registrations': exam_registrations,
+               }
+
+    import json
+    import os
+    import urllib2
+
+    # TODO
+    # Copied from views.badges. Should be factored out to a helper method at some point.
+    badge_service = "http://0.0.0.0:8002"
+    issuer_name = "test!edX"
+
+    recipient_id = request.user.email
+    recipients_url = os.path.join(badge_service, "recipients", recipient_id)
+
+    def read(url):
+        print url
+        try:
+            f = urllib2.urlopen(url)
+            return json.loads(f.read())
+        except:
+            print "ERROR: URL NOT FOUND -- " + url
+            return {}
+
+    badges_url = os.path.join(recipients_url, "badges")
+    unlockable_badgetypes_url = os.path.join(badge_service, "issuers", issuer_name, "badgetypes")
+
+    badge_urls = read(badges_url)
+
+    earned_badges = [read(url) for url in badge_urls.get('badges', [])]
+
+    earned_badges = [
+        badge
+        for badge in earned_badges
+        if not badge['revoked']
+    ]
+
+    unlockable_badgetype_urls = read(unlockable_badgetypes_url)
+    unlockable_badgetypes = [
+        read(url)
+        for url in unlockable_badgetype_urls.get('badgetypes', [])
+        if not url in [badge['badge']['href'] for badge in earned_badges]
+    ]
+
+    unlockable_badgetypes = [
+        badgetype
+        for badgetype in unlockable_badgetypes
+        if badgetype['is_enabled']
+    ]
+
+    context.update({
+        'student': request.user,
+        'earned_badges': earned_badges,
+        'badge_urls': json.dumps(badge_urls.get('badges'), []),
+    })
+
+    return render_to_response('profile.html', context)
+
+
+
 def try_change_enrollment(request):
     """
     This method calls change_enrollment if the necessary POST

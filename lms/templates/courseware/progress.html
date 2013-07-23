@@ -38,10 +38,6 @@ ${progress_graph.body(grade_summary, course.grade_cutoffs, "grade-detail-graph",
         <div id="grade-detail-graph" aria-hidden="true"></div>
       %endif
 
-      %if True:
-        <h3><a href="./badges">Badges</h3>
-      %endif
-
       <ol class="chapters">
         %for chapter in courseware_summary:
         %if not chapter['display_name'] == "hidden":
