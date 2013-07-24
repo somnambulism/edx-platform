@@ -151,12 +151,7 @@ class VideoAlphaModule(VideoAlphaFields, XModule):
         return json.dumps({'position': self.position})
 
     def get_html(self):
-        if isinstance(modulestore(), MongoModuleStore):
-            caption_asset_path = StaticContent.get_base_url_path_for_course_assets(self.location) + '/subs_'
-        else:
-            # VS[compat]
-            # cdodge: filesystem static content support.
-            caption_asset_path = "/static/subs/"
+        caption_asset_path = "/static/subs/"
 
         return self.system.render_template('videoalpha.html', {
             'youtube_streams': self.youtube_streams,

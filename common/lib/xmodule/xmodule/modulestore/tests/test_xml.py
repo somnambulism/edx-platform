@@ -2,8 +2,9 @@ import os.path
 
 from xmodule.course_module import CourseDescriptor
 from xmodule.modulestore.xml import XMLModuleStore
+from xmodule.modulestore import XML_MODULESTORE_TYPE
 
-from nose.tools import assert_raises
+from nose.tools import assert_raises, assert_equals
 
 from .test_modulestore import check_path_to_location
 from . import DATA_DIR
@@ -18,6 +19,10 @@ class TestXMLModuleStore(object):
         print "finished import"
 
         check_path_to_location(modulestore)
+
+    def test_xml_modulestore_type(self):
+        store = XMLModuleStore(DATA_DIR, course_dirs=['toy', 'simple'])
+        assert_equals(store.get_modulestore_type('foo/bar/baz'), XML_MODULESTORE_TYPE)
 
     def test_unicode_chars_in_xml_content(self):
         # edX/full/6.002_Spring_2012 has non-ASCII chars, and during
