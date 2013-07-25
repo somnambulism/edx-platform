@@ -334,6 +334,7 @@ def get_module_for_descriptor_internal(user, descriptor, model_data_cache, cours
     # TODO (cpennington): When modules are shared between courses, the static
     # prefix is going to have to be specific to the module, not the directory
     # that the xml was loaded from
+
     system = ModuleSystem(
         track_function=track_function,
         render_template=render_to_string,
@@ -349,7 +350,7 @@ def get_module_for_descriptor_internal(user, descriptor, model_data_cache, cours
         replace_urls=partial(
             static_replace.replace_static_urls,
             data_directory=getattr(descriptor, 'data_dir', None),
-            course_namespace=descriptor.location._replace(category=None, name=None),
+            course_id=course_id,
         ),
         node_path=settings.NODE_PATH,
         xblock_model_data=xblock_model_data,
@@ -361,6 +362,7 @@ def get_module_for_descriptor_internal(user, descriptor, model_data_cache, cours
         cache=cache,
         can_execute_unsafe_code=(lambda: can_execute_unsafe_code(course_id)),
     )
+
     # pass position specified in URL to module through ModuleSystem
     system.set('position', position)
     system.set('DEBUG', settings.DEBUG)
@@ -398,8 +400,12 @@ def get_module_for_descriptor_internal(user, descriptor, model_data_cache, cours
     module.get_html = replace_static_urls(
         _get_html,
         getattr(descriptor, 'data_dir', None),
+<<<<<<< HEAD
         course_namespace=module.location._replace(category=None, name=None)
     )
+=======
+        course_id=course_id)
+>>>>>>> WIP
 
     # Allow URLs of the form '/course/' refer to the root of multicourse directory
     #   hierarchy of this course
