@@ -22,54 +22,101 @@
 <script>
 ${progress_graph.body(grade_summary, course.grade_cutoffs, "grade-detail-graph", not course.no_grade, not course.no_grade)}
 
-var default_badge_info = "<h2>Badges</h2>";
-var badge_detail_box = "#badge_detail_box";
-var restore_default = function() {
-  //$(badge_detail_box).html(default_badge_info);
-  $(badge_detail_box).hide(0);
-}
-$("img.badgelet").hover(
-  function() {
-      $(badge_detail_box).stop();
-      $(badge_detail_box).show();
-      $(badge_detail_box).fadeOut({'duration': 0});
-      $(badge_detail_box).html($(this).attr('badge_detail'));
-      $(badge_detail_box).fadeIn({'duration': 0});
-  },
-  function() {
-      $(badge_detail_box).stop();
-      $(badge_detail_box).fadeOut(1000, function() {
-        restore_default();
-      });
-      $(badge_detail_box).fadeIn();
-
-  }
-
-);
-restore_default();
-
 </script>
 
 <style>
 img.badgelet {
   margin: 10px;
   height: 60px;
-  border-radius: 7px;
+  border-radius: 3px;
 }
 img.badgelet:hover {
-  box-shadow: 0px 0px 15px rgb(29,157,217);
+  //box-shadow: 0px 0px 15px rgb(29,157,217);
+  opacity: 0.6;
+  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
+  filter:alpha(opacity=60);
+  -moz-opacity:0.6;
+  -khtml-opacity: 0.6;
+
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility:    hidden;
+  -ms-backface-visibility:     hidden;
+  backface-visibility:         hidden;
 }
 img.unlockable {
-            filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale"); /* Firefox 10+, Firefox on Android */
-            filter: grayscale( 100% );
-            filter: gray;
-    -webkit-filter: grayscale( 100% );
-       -moz-filter: grayscale( 100% );
-         -o-filter: grayscale( 100% );
-        -ms-filter: grayscale( 100% );
+          filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale"); /* Firefox 10+, Firefox on Android */
+          filter: grayscale( 100% );
+          filter: gray;
+  -webkit-filter: grayscale( 100% );
+     -moz-filter: grayscale( 100% );
+       -o-filter: grayscale( 100% );
+      -ms-filter: grayscale( 100% );
+  opacity: 0.5;
+  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+  filter: alpha(opacity=50);
+  -moz-opacity:0.5;
+  -khtml-opacity: 0.5;
 }
 img.unlockable:hover {
-  box-shadow: 0px 0px 15px #888888;
+  //box-shadow: 0px 0px 15px #888888;
+  opacity: 0.3;
+  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
+  filter: alpha(opacity=30);
+  -moz-opacity:0.3;
+  -khtml-opacity: 0.3;
+}
+a small {
+  display: none;
+  background: #FFF;
+  text-align: center;
+  padding: 5px;
+  border-left: 1px solid #111;
+  border-top: 1px solid #111;
+  border-right: 1px solid #333;
+  border-bottom: 1px solid #333;
+  border-radius: 3px;
+  color: #fff;
+  text-indent: 0;
+  max-width: 200px;
+}
+
+a:hover small.imaginary {
+  display: block;
+  position: absolute;
+  top: 0%;
+  z-index: 9999;
+}
+
+/*Breaks if named tooltip instead of detailed. No idea why.*/
+a.detailed {
+    display: inline;
+    position: relative;
+    font-size:80%;
+    overflow:hidden;
+}
+
+a.detailed:hover:after{
+    background: #333;
+    border-radius:6px;
+    bottom: 21px;
+    color: #fff;
+    content: attr(title);
+    left: 20%;
+    padding: 5px 15px;
+    position: absolute;
+    z-index: 98;
+    max-width: 500px;
+}
+
+a.detailed:hover:before{
+    border: solid;
+    border-color: #333 transparent;
+    border-width: 8px 8px 0 8px;
+    bottom: 15px;
+    content: "";
+    left: 50%;
+    position: absolute;
+    z-index: 99;
 }
 
 </style>
@@ -92,68 +139,25 @@ img.unlockable:hover {
 
       %if len(badge_data['unlockable_badgetypes']) != 0 or len(badge_data['earned_badges']) != 0:
         <hr />
-        <div>
-              %for i in range(len(badge_data['earned_badges'])):
-                <% badge = badge_data['earned_badges'][i] %>
-                <a href="./badges"><img src="${badge['image']}" class="badgelet" badge_detail="
-                    <h3>${badge['badge']['name']}</h3>
-                    <p>
-                    <b>${badge['badge']['description']} </b>
-                      %if badge['badge'].get('criteria_text', None):
-                        <br /><i>${badge['badge']['criteria_text']}</i>
-                      %endif
-                    </p>
-                " /></a>
-              %endfor
-              %for i in range(len(badge_data['unlockable_badgetypes'])):
-                <%badgetype = badge_data['unlockable_badgetypes'][i]%>
-                <a href="./badges"><img src="${badgetype['image']}" class="badgelet unlockable" badge_detail="
-                    <p>
-                    <i>
-                    %if badgetype.get('criteria_text', None):
-                        ${badgetype['criteria_text']}
-                    %endif
-                    </i>
-                    </p>
-                " /></a>
-              %endfor
-            <br />
-            <div style="vertical-align:middle; padding-left:20px; height:500px" id="badge_detail_box">
-            </div>
-        </div>
-
-        <hr />
-
-        %if len(badge_data['earned_badges']) != 0:
-          <h2>Earned</h2>
+        <div style="position:relative; text-align:center;">
+          <div style="overflow-x:scroll; overflow-y:hidden; white-space:nowrap;">
+            <span style="padding-right:100px">&nbsp;</span>
             %for i in range(len(badge_data['earned_badges'])):
               <%badge = badge_data['earned_badges'][i]%>
-                    <h3>${badge['badge']['name']}</h3>
-                    <p>
-                    <b>${badge['badge']['description']} </b><br />
-                      issued on <b>${badge['issued_on']}</b> by
-                      <a href="${badge['badge']['issuer']['origin']}">${badge['badge']['issuer']['name']}</a>
-                      %if badge['badge'].get('criteria_text', None):
-                        <br /><i>${badge['badge']['criteria_text']}</i>
-                      %endif
-                    </p>
+              <%badgetype = badge.get('badge', {})%>
+              <%num = badgetype.get('number_awarded')%>
+              <a href="./badges" class="detailed" title="${badgetype.get('name')}"><img src="${badge.get('image', '')}" class="badgelet" />
+              </a>
             %endfor
-        %endif
-        %if len(badge_data['unlockable_badgetypes']) != 0:
-          <h2>Unlockable</h2>
             %for i in range(len(badge_data['unlockable_badgetypes'])):
               <%badgetype = badge_data['unlockable_badgetypes'][i]%>
-                    <p>
-                    <i>
-                    %if badgetype.get('criteria_text', None):
-                        ${badgetype['criteria_text']}
-                    %else:
-
-                    %endif
-                    </i>
-                    </p>
+              <%num = badgetype.get('number_awarded')%>
+              <a href="./badges"><img src="${badgetype.get('image', '')}" class="badgelet unlockable" />
+              </a>
             %endfor
-        %endif
+            <span style="padding-right:100px">&nbsp;</span>
+          </div>
+        </div>
       %endif
 
       <ol class="chapters">

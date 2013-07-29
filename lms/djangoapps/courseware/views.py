@@ -730,16 +730,18 @@ def make_badge_data(request, course=None):
             f = urllib2.urlopen(url)
             return json.loads(f.read())
         except:
+            print '\033[91m'
             print "ERROR: URL NOT FOUND -- " + url
+            print '\033[0m'
             return {}
 
     badges_url = os.path.join(recipients_url, "badges")
 
     if course is not None:
-        suffix = "?course_id=" + course.number
+        suffix = "?course_id=" + course.id
         badges_url += suffix
 
-        course_url = os.path.join(badge_service, "courses", course.number)
+        course_url = os.path.join(badge_service, "courses", course.id)
         unlockable_badgetypes_url = os.path.join(course_url, "badgetypes")
 
     badge_urls = read(badges_url)
@@ -748,7 +750,7 @@ def make_badge_data(request, course=None):
     earned_badges = [
         badge
         for badge in earned_badges
-        if not badge['revoked']
+        if not badge.get('revoked', False)
     ]
 
     if course is not None:
@@ -756,13 +758,13 @@ def make_badge_data(request, course=None):
         unlockable_badgetypes = [
             read(url)
             for url in unlockable_badgetype_urls.get('badgetypes', [])
-            if not url in [badge['badge']['href'] for badge in earned_badges]
+            if not url in [badge.get('badge', {}).get('href', None) for badge in earned_badges]
         ]
 
         unlockable_badgetypes = [
             badgetype
             for badgetype in unlockable_badgetypes
-            if badgetype['is_enabled']
+            if badgetype.get('is_enabled', True)
         ]
 
     else:
@@ -771,11 +773,9 @@ def make_badge_data(request, course=None):
     return {
         'earned_badges': earned_badges,
         'unlockable_badgetypes': unlockable_badgetypes,
-        'badge_urls': json.dumps(badge_urls.get('badges'), []),
+        'badge_urls': json.dumps(badge_urls.get('badges', [])),
 
     }
-
-
 
 
 @login_required

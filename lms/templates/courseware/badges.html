@@ -60,6 +60,8 @@ img.unlockable {
        -moz-filter: grayscale( 100% );
          -o-filter: grayscale( 100% );
         -ms-filter: grayscale( 100% );
+        opacity: 0.4;
+        filter:alpha(opacity=40);
 }
 </style>
 
@@ -102,18 +104,27 @@ img.unlockable {
           <ol class="sections">
             %for i in range(len(badge_data['earned_badges'])):
               <%badge = badge_data['earned_badges'][i]%>
+              <%badgetype = badge.get('badge', {})%>
+              <%num = badgetype.get('number_awarded')%>
               <li>
                 <table><tr>
-                  <td><img src="${badge['image']}" style="float:left; width:100px; margin-right:20px;" /></td>
+                  <td><img src="${badge.get('image')}" style="float:left; width:100px; margin-right:20px; border-radius:3px;" /></td>
                   <td>
-                    <h3>${badge['badge']['name']}</h3>
+                    <h3>${badgetype.get('name')}</h3>
                     <p>
-                    <b>${badge['badge']['description']} </b><br />
-                      issued on <b>${badge['issued_on']}</b> by
-                      <a href="${badge['badge']['issuer']['origin']}">${badge['badge']['issuer']['name']}</a>
-                      %if badge['badge'].get('criteria_text', None):
-                        <br /><i>${badge['badge']['criteria_text']}</i>
+                    <b>${badgetype.get('description')} </b><br />
+                      awarded on <b>${badge.get('issued_on')}</b> by
+                      <a href="${badgetype.get('issuer', {}).get('origin')}">${badgetype.get('issuer', {}).get('name')}</a><br />
+                      <i>
+                      <b>
+                      %if badgetype.get('criteria_text', None):
+                        ${badgetype.get('criteria_text')}<br />
                       %endif
+                      </b>
+                      %if num is not None:
+                          ${num-1} other student${' has' if num-1 is 1 else 's have'} this badge.
+                      %endif
+                      </i>
                     </p>
                   </td>
                 </tr></table>
@@ -131,16 +142,20 @@ img.unlockable {
           <ol class="sections">
             %for i in range(len(badge_data['unlockable_badgetypes'])):
               <%badgetype = badge_data['unlockable_badgetypes'][i]%>
+              <%num = badgetype.get('number_awarded')%>
               <li>
                 <table><tr>
-                  <td><img src="${badgetype['image']}" class="unlockable" style="float:left; width:100px; margin-right:20px;" /></td>
+                  <td><img src="${badgetype.get('image')}" class="unlockable" style="float:left; width:100px; margin-right:20px; border-radius:3px" /></td>
                   <td>
                     <p>
                     <i>
+                    <b>
                     %if badgetype.get('criteria_text', None):
-                        ${badgetype['criteria_text']}
-                    %else:
-
+                        ${badgetype.get('criteria_text')}<br />
+                    %endif
+                    </b>
+                    %if num is not None:
+                        ${num} other student${' has' if num is 1 else 's have'} this badge.
                     %endif
                     </i>
                     </p>
