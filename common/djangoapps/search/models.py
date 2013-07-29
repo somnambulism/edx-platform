@@ -14,7 +14,7 @@ class SearchResults:
     def __init__(self, request, response):
         raw_results = json.loads(response._content).get("hits", {"hits": ""})["hits"]
         scores = [entry["_score"] for entry in raw_results]
-        self.request = request
+        self.sort = request.GET.get("sort", None)
         raw_data = [entry["_source"] for entry in raw_results]
         self.query = request.GET.get("s", "*.*")
         results = zip(raw_data, scores)
@@ -22,7 +22,7 @@ class SearchResults:
         self.has_results = len(self.entries) > 0
 
     def sort_results(self):
-        self.entries = sorting.sort(self.entries, self.request.GET.get("sort", None))
+        self.entries = sorting.sort(self.entries, self.sort)
 
     def get_counter(self, field):
         master_list = [entry.data[field].lower() for entry in self.entries]

@@ -1,5 +1,6 @@
 import requests
 import logging
+import hashlib
 
 from django.conf import settings
 from django.http import HttpResponseBadRequest
@@ -19,11 +20,10 @@ log = logging.getLogger("mitx.courseware")
 
 @ensure_csrf_cookie
 def search(request, course_id):
-    results_string = ""
     course = get_course_with_access(request.user, course_id, 'load')
-    results_string = find(request, course_id)
-    return render_to_response("search_templates/wrapper.html", {
-        "body": results_string, "course": course})
+    context = find(request, course_id)
+    context.update({"course": course})
+    return render_to_response("search_templates/search.html", context)
 
 
 @ensure_csrf_cookie
@@ -48,8 +48,8 @@ def find(request, course_id):
     if request.GET.get("all_courses" == "true", False):
         base_url = "/".join([database, index])
     else:
-        course_type = course_id.split("/")[1]
-        base_url = "/".join([database, index, course_type])
+        course_hash = hashlib.sha1(course_id).hexdigest()
+        base_url = "/".join([database, index, course_hash])
     full_url = "/".join([base_url, "_search?q=searchable_text:"])
     log.debug(full_url)
     context = {}
@@ -66,7 +66,8 @@ def find(request, course_id):
 
     data = proper_page(results_pages, page)
     context.update({
-        "data": data, "next_page": next_link(request, data),
+        "data": data,
+        "next_page": next_link(request, data),
         "prev_page": prev_link(request, data),
         "search_correction_link": search_correction_link(request, correction),
         "spelling_correction": correction,
@@ -75,7 +76,7 @@ def find(request, course_id):
         "selected_course": request.GET.get("selected_course", ""),
         "selected_org": request.GET.get("selected_org", "")
     })
-    return render_to_string("search_templates/results.html", context)
+    return context
 
 
 def query_reduction(query, stopwords):
