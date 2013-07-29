@@ -28,7 +28,7 @@ $(document).ready(function() {
   start_info_button();
 
   $('input#badge_export').click(function() {
-    OpenBadges.issue(${badge_urls}, function(e,s) {});
+    OpenBadges.issue(${badge_data['badge_urls']}, function(e,s) {});
   });
 
 
@@ -72,7 +72,7 @@ img.unlockable {
       <header>
         <h1>Badges for <i>${course.display_name}</i> (Prototype)</h1>
       </header>
-      %if len(unlockable_badgetypes) != 0 or len(earned_badges) != 0:
+      %if len(badge_data['unlockable_badgetypes']) != 0 or len(badge_data['earned_badges']) != 0:
         <input type="button" id="badge_info_button" value="" style="float:right; width:150px; margin-left:20px" />
         <p>
           If you wish, you can export these badges to <a href="http://beta.openbadges.org/">Mozilla Backpack</a> to share them.
@@ -96,12 +96,12 @@ img.unlockable {
         </ol></p>
         </div>
       <ol class="chapters">
-        %if len(earned_badges) != 0:
+        %if len(badge_data['earned_badges']) != 0:
         <li>
           <h2>Earned</h2>
           <ol class="sections">
-            %for i in range(len(earned_badges)):
-              <%badge = earned_badges[i]%>
+            %for i in range(len(badge_data['earned_badges'])):
+              <%badge = badge_data['earned_badges'][i]%>
               <li>
                 <table><tr>
                   <td><img src="${badge['image']}" style="float:left; width:100px; margin-right:20px;" /></td>
@@ -118,19 +118,19 @@ img.unlockable {
                   </td>
                 </tr></table>
               </li>
-              %if i != len(earned_badges) - 1:
+              %if i != len(badge_data['earned_badges']) - 1:
                 <hr />
               %endif
             %endfor
           </ol>
         </li>
         %endif
-        %if len(unlockable_badgetypes) != 0:
+        %if len(badge_data['unlockable_badgetypes']) != 0:
         <li>
           <h2>Unlockable</h2>
           <ol class="sections">
-            %for i in range(len(unlockable_badgetypes)):
-              <%badgetype = unlockable_badgetypes[i]%>
+            %for i in range(len(badge_data['unlockable_badgetypes'])):
+              <%badgetype = badge_data['unlockable_badgetypes'][i]%>
               <li>
                 <table><tr>
                   <td><img src="${badgetype['image']}" class="unlockable" style="float:left; width:100px; margin-right:20px;" /></td>
@@ -147,7 +147,7 @@ img.unlockable {
                   </td>
                 </tr></table>
               </li>
-              %if i != len(unlockable_badgetypes) - 1:
+              %if i != len(badge_data['unlockable_badgetypes']) - 1:
                 <hr />
               %endif
             %endfor

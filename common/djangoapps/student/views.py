@@ -311,7 +311,7 @@ def dashboard(request):
 @login_required
 def profile(request):
 
-    #TODO: Eliminate unnecessary items. <,,~
+    #TODO: Eliminate unnecessary items.
 
     user = request.user
     enrollments = CourseEnrollment.objects.filter(user=user)
@@ -366,14 +366,29 @@ def profile(request):
                'exam_registrations': exam_registrations,
                }
 
+    context.update({
+        'badge_data': make_badge_data(request)
+    })
+
+    print context['badge_data']
+
+    return render_to_response('profile.html', context)
+
+
+def make_badge_data(request, course=None):
+    """
+    Returns a dictionary:
+        earned_badges -- a list of dictionaries; each dictionary has information about a badge
+        unlockable_badgetypes -- a list of dictionaries; each dictionary has information about an unearned badgetype
+        badge_urls -- a list of urls, each url has badge JSON, the urls are sent to Open Badging to export badges
+    """
+
     import json
     import os
     import urllib2
 
-    # TODO
-    # Copied from views.badges. Should be factored out to a helper method at some point.
+    #Important constants whose values might need updating every now and then
     badge_service = "http://0.0.0.0:8002"
-    issuer_name = "test!edX"
 
     recipient_id = request.user.email
     recipients_url = os.path.join(badge_service, "recipients", recipient_id)
@@ -388,39 +403,47 @@ def profile(request):
             return {}
 
     badges_url = os.path.join(recipients_url, "badges")
-    unlockable_badgetypes_url = os.path.join(badge_service, "issuers", issuer_name, "badgetypes")
+
+
+    if course is not None:
+        suffix = "?course_id=" + course.number
+        badges_url += suffix
+
+        course_url = os.path.join(badge_service, "courses", course.number)
+        unlockable_badgetypes_url = os.path.join(course_url, "badgetypes")
 
     badge_urls = read(badges_url)
 
     earned_badges = [read(url) for url in badge_urls.get('badges', [])]
-
     earned_badges = [
         badge
         for badge in earned_badges
         if not badge['revoked']
     ]
 
-    unlockable_badgetype_urls = read(unlockable_badgetypes_url)
-    unlockable_badgetypes = [
-        read(url)
-        for url in unlockable_badgetype_urls.get('badgetypes', [])
-        if not url in [badge['badge']['href'] for badge in earned_badges]
-    ]
+    if course is not None:
+        unlockable_badgetype_urls = read(unlockable_badgetypes_url)
+        unlockable_badgetypes = [
+            read(url)
+            for url in unlockable_badgetype_urls.get('badgetypes', [])
+            if not url in [badge['badge']['href'] for badge in earned_badges]
+        ]
 
-    unlockable_badgetypes = [
-        badgetype
-        for badgetype in unlockable_badgetypes
-        if badgetype['is_enabled']
-    ]
+        unlockable_badgetypes = [
+            badgetype
+            for badgetype in unlockable_badgetypes
+            if badgetype['is_enabled']
+        ]
 
-    context.update({
-        'student': request.user,
+    else:
+        unlockable_badgetypes = []
+
+    return {
         'earned_badges': earned_badges,
+        'unlockable_badgetypes': unlockable_badgetypes,
         'badge_urls': json.dumps(badge_urls.get('badges'), []),
-    })
 
-    return render_to_response('profile.html', context)
-
+    }
 
 
 def try_change_enrollment(request):

@@ -130,7 +130,7 @@
     start_info_button();
 
     $('input#badge_export').click(function() {
-      OpenBadges.issue(${badge_urls}, function(e,s) {});
+      OpenBadges.issue(${badge_data['badge_urls']}, function(e,s) {});
     });
 
 
@@ -242,13 +242,13 @@
       <input type="button" id="badge_export" value="Export All" style="float:right;" />
 
       <p>
-        These badges are <a href="http://openbadges.org/">Mozilla Open Badges</a>, which means you can save them in <a href="http://beta.openbadges.org/">Mozilla Backpack</a>, a separate website which stores badges. You can display and share the badges elsewhere on the Internet, along with any badges you collect from other websites. Log in to Mozilla Backpack using your <b>${student.email}</b> email address.
+        These badges are <a href="http://openbadges.org/">Mozilla Open Badges</a>, which means you can save them in <a href="http://beta.openbadges.org/">Mozilla Backpack</a>, a separate website which stores badges. You can display and share the badges elsewhere on the Internet, along with any badges you collect from other websites. Log in to Mozilla Backpack using your <b>${user.email}</b> email address.
       </p>
       </div>
       <hr />
 
-      %for i in range(len(earned_badges)):
-        <%badge = earned_badges[i]%>
+      %for i in range(len(badge_data['earned_badges'])):
+        <%badge = badge_data['earned_badges'][i]%>
           <table><tr>
             <td><img src="${badge['image']}" style="float:left; width:100px; margin-right:20px;" /></td>
             <td>
