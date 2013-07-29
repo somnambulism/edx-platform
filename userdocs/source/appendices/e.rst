@@ -343,14 +343,14 @@ Sample Problem:
 
   <p>What base is the decimal numeral system in?
       <numericalresponse answer="10">
-          <textline />
+          <formulaequationinput />
       </numericalresponse>
   </p>
 
     <p>What is the value of the standard gravity constant <i>g</i>, measured in m/s<sup>2</sup>? Give your answer to at least two decimal places.
     <numericalresponse answer="9.80665">
       <responseparam type="tolerance" default="0.01" />
-        <textline />
+      <formulaequationinput />
     </numericalresponse>
   </p>
 
@@ -362,7 +362,7 @@ Sample Problem:
   <p>What is the distance in the plane between the points (pi, 0) and (0, e)? You can type math.
       <numericalresponse answer="$computed_response">
           <responseparam type="tolerance" default="0.0001" />
-          <textline math="1" />
+          <formulaequationinput />
       </numericalresponse>
   </p>
   <solution>
@@ -391,7 +391,7 @@ Exact values
   <problem>
 
     <numericalresponse answer="10">
-      <textline />
+      <formulaequationinput />
     </numericalresponse>
 
     <solution>
@@ -409,7 +409,7 @@ Answers with decimal precision
 
     <numericalresponse answer="9.80665">
       <responseparam type="tolerance" default="0.01" />
-        <textline />
+      <formulaequationinput />
     </numericalresponse>
 
     <solution>
@@ -427,7 +427,7 @@ Answers with percentage precision
 
     <numericalresponse answer="100">
       <responseparam type="tolerance" default="10%" />
-        <textline />
+      <formulaequationinput />
     </numericalresponse>
 
     <solution>
@@ -445,7 +445,7 @@ Answers with a live math interpretation popup display
 
     <numericalresponse answer="3.14159">
       <responseparam type="tolerance" default="0.00001" />
-      <textline math="1" />
+      <formulaequationinput />
     </numericalresponse>
 
     <solution>
@@ -468,7 +468,7 @@ Answers with scripts
 
     <numericalresponse answer="$computed_response">
       <responseparam type="tolerance" default="0.0001" />
-      <textline math="1" />
+      <formulaequationinput />
     </numericalresponse>
 
     <solution>
