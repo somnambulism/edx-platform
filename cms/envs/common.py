@@ -107,6 +107,12 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',  # this is required for admin
 )
 
+
+# use the ratelimit backend to prevent brute force attacks
+AUTHENTICATION_BACKENDS = (
+    'ratelimitbackend.backends.RateLimitModelBackend',
+)
+
 # add csrf support unless disabled for load testing
 if not MITX_FEATURES.get('AUTOMATIC_AUTH_FOR_LOAD_TESTING'):
     TEMPLATE_CONTEXT_PROCESSORS += ('django.core.context_processors.csrf',)  # necessary for csrf protection
@@ -154,7 +160,10 @@ MIDDLEWARE_CLASSES = (
     # Detects user-requested locale from 'accept-language' header in http request
     'django.middleware.locale.LocaleMiddleware',
 
-    'django.middleware.transaction.TransactionMiddleware'
+    'django.middleware.transaction.TransactionMiddleware',
+
+    # catches any uncaught RateLimitExceptions and returns a 403 instead of a 500
+    'ratelimitbackend.middleware.RateLimitMiddleware'
 )
 
 # add in csrf middleware unless disabled for load testing
@@ -196,8 +205,8 @@ STATICFILES_DIRS = [
     COMMON_ROOT / "static",
     PROJECT_ROOT / "static",
 
-# This is how you would use the textbook images locally
-# ("book", ENV_ROOT / "book_images")
+    # This is how you would use the textbook images locally
+    # ("book", ENV_ROOT / "book_images")
 ]
 
 # Locale/Internationalization

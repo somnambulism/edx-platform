@@ -430,7 +430,7 @@ def login_user(request, error=""):
                                         'value': _('Email or password is incorrect.')}))  # TODO: User error message
 
     username = user.username
-    user = authenticate(username=username, password=password)
+    user = authenticate(username=username, password=password, request=request)
     if user is None:
         log.warning(u"Login failed - password for {0} is invalid".format(email))
         return HttpResponse(json.dumps({'success': False,
@@ -693,7 +693,7 @@ def create_account(request, post_override=None):
     # Immediately after a user creates an account, we log them in. They are only
     # logged in until they close the browser. They can't log in again until they click
     # the activation link from the email.
-    login_user = authenticate(username=post_vars['username'], password=post_vars['password'])
+    login_user = authenticate(username=post_vars['username'], password=post_vars['password'], request=request)
     login(request, login_user)
     request.session.set_expiry(0)
 
@@ -938,7 +938,7 @@ def auto_auth(request):
     # if they already are a user, log in
     try:
         user = User.objects.get(username=username)
-        user = authenticate(username=username, password=password)
+        user = authenticate(username=username, password=password, request=request)
         login(request, user)
 
     # else create and activate account info

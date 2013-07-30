@@ -187,7 +187,7 @@ def external_login_or_signup(request,
         log.info('SHIB: Logging in linked user %s', user.email)
     else:
         uname = internal_user.username
-        user = authenticate(username=uname, password=eamap.internal_password)
+        user = authenticate(username=uname, password=eamap.internal_password, request=request)
     if user is None:
         log.warning("External Auth Login failed for %s / %s",
                     uname, eamap.internal_password)
@@ -709,7 +709,8 @@ def provider_login(request):
         # Failure is again redirected to the login dialog.
         username = user.username
         password = request.POST.get('password', None)
-        user = authenticate(username=username, password=password)
+        #TODO: catch the rate limit error and do something useful
+        user = authenticate(username=username, password=password, request=request)
         if user is None:
             request.session['openid_error'] = True
             msg = "OpenID login failed - password for %s is invalid"

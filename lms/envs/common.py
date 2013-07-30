@@ -95,19 +95,19 @@ MITX_FEATURES = {
     # This flag disables the requirement of having to agree to the TOS for users registering
     # with Shib.  Feature was requested by Stanford's office of general counsel
     'SHIB_DISABLE_TOS': False,
-    
+
     # Enables ability to restrict enrollment in specific courses by the user account login method
     'RESTRICT_ENROLL_BY_REG_METHOD': False,
 
     # analytics experiments
     'ENABLE_INSTRUCTOR_ANALYTICS': False,
 
-    # enable analytics server.  
+    # enable analytics server.
     # WARNING: THIS SHOULD ALWAYS BE SET TO FALSE UNDER NORMAL
     # LMS OPERATION. See analytics.py for details about what
-    # this does. 
+    # this does.
 
-    'RUN_AS_ANALYTICS_SERVER_ENABLED' : False, 
+    'RUN_AS_ANALYTICS_SERVER_ENABLED' : False,
 
     # Flip to True when the YouTube iframe API breaks (again)
     'USE_YOUTUBE_OBJECT_API': False,
@@ -230,6 +230,12 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
     # Hack to get required link URLs to password reset templates
     'mitxmako.shortcuts.marketing_link_context_processor',
+)
+
+
+# use the ratelimit backend to prevent brute force attacks
+AUTHENTICATION_BACKENDS = (
+    'ratelimitbackend.backends.RateLimitModelBackend',
 )
 
 # add csrf support unless disabled for load testing
@@ -436,10 +442,10 @@ OPEN_ENDED_GRADING_INTERFACE = {
     'url': 'http://sandbox-grader-001.m.edx.org/peer_grading',
     'username': 'incorrect_user',
     'password': 'incorrect_pass',
-    'staff_grading' : 'staff_grading',
-    'peer_grading' : 'peer_grading',
-    'grading_controller' : 'grading_controller'
-    }
+    'staff_grading': 'staff_grading',
+    'peer_grading': 'peer_grading',
+    'grading_controller': 'grading_controller'
+}
 
 # Used for testing, debugging peer grading
 MOCK_PEER_GRADING = False
@@ -490,6 +496,9 @@ MIDDLEWARE_CLASSES = (
 
     'django_comment_client.utils.ViewNameMiddleware',
     'codejail.django_integration.ConfigureCodeJailMiddleware',
+
+    # catches any uncaught RateLimitExceptions and returns a 403 instead of a 500
+    'ratelimitbackend.middleware.RateLimitMiddleware'
 )
 
 # add in csrf middleware unless disabled for load testing

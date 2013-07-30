@@ -4,6 +4,7 @@ Tests for student activation and login
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
+from django.core.cache import cache
 from courseware.tests.factories import UserFactory, RegistrationFactory, UserProfileFactory
 import json
 
@@ -30,6 +31,9 @@ class LoginTest(TestCase):
 
         # Store the login url
         self.url = reverse('login')
+
+        #clear the cache
+        cache.clear()
 
     def test_login_success(self):
         response = self._login_response('test@edx.org', 'test_password')
@@ -73,6 +77,25 @@ class LoginTest(TestCase):
         unicode_password = u'test_password' + unichr(1972)
         response = self._login_response('test@edx.org', unicode_password)
         self._assert_response(response, success=False)
+
+    def test_login_ratelimited_success(self):
+        for i in xrange(20):
+            password = u'test_password{0}'.format(i)
+            response = self._login_response('test@edx.org', password)
+            self._assert_response(response, success=False)
+        # now try logging in with a vlaid password
+        response = self._login_response('test@edx.org', 'test_password')
+        self._assert_response(response, success=True)
+
+    def test_login_ratelimited(self):
+        # try logging in 30 times
+        for i in xrange(35):
+            password = u'test_password{0}'.format(i)
+            response = self._login_response('test@edx.org', password)
+        # check to see if this response indicates that this was ratelimited
+        response = self._login_response('test@edx.org', 'wrong_password')
+        # TODO: change this to whatever we end up using
+        self.assertEquals(response.status_code, 403)
 
     def _login_response(self, email, password):
         ''' Post the login info '''
