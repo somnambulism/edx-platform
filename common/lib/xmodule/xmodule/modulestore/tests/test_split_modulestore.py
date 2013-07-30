@@ -253,11 +253,11 @@ class SplitModuleItemTests(SplitModuleTest):
 
         locator = BlockUsageLocator(course_id='GreekHero', usage_id='head12345', revision='draft')
         self.assertTrue(
-            modulestore().has_item(course_id, locator),
+            modulestore().has_item(locator.course_id, locator),
             "couldn't find in 12345"
         )
         self.assertTrue(
-            modulestore().has_item(course_id, BlockUsageLocator(
+            modulestore().has_item(locator.course_id, BlockUsageLocator(
                 course_id=locator.course_id,
                 revision='draft',
                 usage_id=locator.usage_id
@@ -265,7 +265,7 @@ class SplitModuleItemTests(SplitModuleTest):
             "couldn't find in draft 12345"
         )
         self.assertFalse(
-            modulestore().has_item(course_id, BlockUsageLocator(
+            modulestore().has_item(locator.course_id, BlockUsageLocator(
                 course_id=locator.course_id,
                 revision='published',
                 usage_id=locator.usage_id)),
@@ -273,34 +273,34 @@ class SplitModuleItemTests(SplitModuleTest):
         )
         locator.revision = 'draft'
         self.assertTrue(
-            modulestore().has_item(course_id, locator),
+            modulestore().has_item(locator.course_id, locator),
             "not found in draft 12345"
         )
 
         # not a course obj
         locator = BlockUsageLocator(course_id='GreekHero', usage_id='chapter1', revision='draft')
         self.assertTrue(
-            modulestore().has_item(course_id, locator),
+            modulestore().has_item(locator.course_id, locator),
             "couldn't find chapter1"
         )
 
         # in published course
         locator = BlockUsageLocator(course_id="wonderful", usage_id="head23456", revision='draft')
-        self.assertTrue(modulestore().has_item(course_id, BlockUsageLocator(course_id=locator.course_id,
+        self.assertTrue(modulestore().has_item(locator.course_id, BlockUsageLocator(course_id=locator.course_id,
                                                                             usage_id=locator.usage_id,
                                                                             revision='published')),
                         "couldn't find in 23456")
         locator.revision = 'published'
-        self.assertTrue(modulestore().has_item(course_id, locator), "couldn't find in 23456")
+        self.assertTrue(modulestore().has_item(locator.course_id, locator), "couldn't find in 23456")
 
     def test_negative_has_item(self):
         # negative tests--not found
         # no such course or block
         course_id = 'GreekHero'
         locator = BlockUsageLocator(course_id="doesnotexist", usage_id="head23456", revision='draft')
-        self.assertFalse(modulestore().has_item(course_id, locator))
+        self.assertFalse(modulestore().has_item(locator.course_id, locator))
         locator = BlockUsageLocator(course_id="wonderful", usage_id="doesnotexist", revision='draft')
-        self.assertFalse(modulestore().has_item(course_id, locator))
+        self.assertFalse(modulestore().has_item(locator.course_id, locator))
 
         # negative tests--insufficient specification
         self.assertRaises(InsufficientSpecificationError, BlockUsageLocator)
