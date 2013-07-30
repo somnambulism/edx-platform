@@ -190,24 +190,24 @@ class MongoIndexer:
 
     def find_files_with_type(self, file_ending):
         """Returns a cursor for content files matching given type"""
-        return self.file_collection.find({"filename": re.compile(".*?"+re.escape(file_ending))})
+        return self.file_collection.find({"filename": re.compile(".*?"+re.escape(file_ending))}, timeout=False)
 
     def find_chunks_with_type(self, file_ending):
         """Returns a chunk cursor for content files matching given type"""
-        return self.chunk_collection.find({"files_id.name": re.compile(".*?"+re.escape(file_ending))})
+        return self.chunk_collection.find({"files_id.name": re.compile(".*?"+re.escape(file_ending))}, timeout=False)
 
     def find_modules_by_category(self, category):
         """Returns a cursor for all xmodules matching given category"""
-        return self.module_collection.find({"_id.category": category})
+        return self.module_collection.find({"_id.category": category}, timeout=False)
 
     def find_categories_with_regex(self, category, regex):
-        return self.module_collection.find({"_id.category": category, "definition.data": regex})
+        return self.module_collection.find({"_id.category": category, "definition.data": regex}, timeout=False)
 
     def find_asset_with_name(self, name):
-        return self.chunk_collection.find_one({"files_id.category": "asset", "files_id.name": name})
+        return self.chunk_collection.find_one({"files_id.category": "asset", "files_id.name": name}, timeout=False)
 
     def find_modules_for_course(self, course):
-        return self.module_collection.find({"_id.course": course})
+        return self.module_collection.find({"_id.course": course}, timeout=False)
 
     def find_transcript_for_video_module(self, video_module):
         data = video_module.get("definition", {"data": ""}).get("data", "")
