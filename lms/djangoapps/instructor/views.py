@@ -329,11 +329,12 @@ def instructor_dashboard(request, course_id):
                 )
                 msg += "Found module.  "
             except StudentModule.DoesNotExist as err:
-                current_msg = "Couldn't find module with that urlname: {0} ".format(
+                error_msg = "Couldn't find module with that urlname: {0}. ".format(
                     problem_urlname
                 )
+                current_msg = error_msg + "({0}) ".format(err)
                 msg += "<font color='red'>" + current_msg + "</font>"
-                log.error(current_msg)
+                log.error(error_msg)
 
         if student_module is not None:
             if "Delete student state for module" in action:
@@ -353,11 +354,12 @@ def instructor_dashboard(request, course_id):
                         page="idashboard"
                     )
                 except Exception as err:
-                    current_msg = "Failed to delete module state for {0}/{1} ".format(
+                    error_msg = "Failed to delete module state for {0}/{1}. ".format(
                         unique_student_identifier, problem_urlname
                     )
+                    current_msg = error_msg + "({0}) ".format(err)
                     msg += current_msg
-                    log.exception(current_msg)
+                    log.exception(error_msg)
             elif "Reset student's attempts" in action:
                 # modify the problem's state
                 try:
@@ -378,11 +380,12 @@ def instructor_dashboard(request, course_id):
                     track.views.server_track(request, "reset-student-attempts", event, page="idashboard")
                     msg += "<font color='green'>Module state successfully reset!</font>"
                 except Exception as err:
-                    current_msg = "Couldn't reset module state for {0}/{1}. ".format(
+                    error_msg = "Couldn't reset module state for {0}/{1}. ".format(
                         unique_student_identifier, problem_urlname
                     )
+                    current_msg = error_msg + "({0}) ".format(err)
                     msg += "<font color='red'>" + current_msg + "</font>"
-                    log.exception(current_msg)
+                    log.exception(error_msg)
             else:
                 # "Rescore student's problem submission" case
                 try:
@@ -396,7 +399,8 @@ def instructor_dashboard(request, course_id):
                         module_state_key, err.message
                     )
                     log.exception("Encountered exception from rescore: student '{0}' problem '{1}'".format(
-                        unique_string_identifier, module_state_key
+                            unique_student_identifier, module_state_key
+                        )
                     )
 
     elif "Get link to student's progress page" in action:
