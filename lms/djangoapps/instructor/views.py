@@ -329,8 +329,11 @@ def instructor_dashboard(request, course_id):
                 )
                 msg += "Found module.  "
             except StudentModule.DoesNotExist as err:
-                msg += "<font color='red'>Couldn't find module with that urlname.  </font>"
-                log.exception()
+                current_msg = "Couldn't find module with that urlname: {0} ".format(
+                    problem_urlname
+                )
+                msg += "<font color='red'>" + current_msg + "</font>"
+                log.error(current_msg)
 
         if student_module is not None:
             if "Delete student state for module" in action:
