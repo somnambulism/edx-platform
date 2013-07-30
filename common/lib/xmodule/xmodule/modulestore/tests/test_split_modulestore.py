@@ -4,6 +4,7 @@ Created on Mar 25, 2013
 @author: dmitchell
 '''
 import datetime
+import os
 import subprocess
 import unittest
 import uuid
@@ -63,13 +64,17 @@ class SplitModuleTest(unittest.TestCase):
         '''
         collection_prefix = SplitModuleTest.MODULESTORE['OPTIONS']['collection'] + '.'
         dbname = SplitModuleTest.MODULESTORE['OPTIONS']['db']
+        devnull = open(os.devnull, "w")
         processes = [
             subprocess.Popen([
                 'mongoimport', '-d', dbname, '-c',
                 collection_prefix + collection, '--jsonArray',
                 '--file',
                 SplitModuleTest.COMMON_ROOT + '/test/data/splitmongo_json/' + collection + '.json'
-            ])
+                ],
+                stderr=devnull,
+                stdout=devnull,
+            )
             for collection in ('active_versions', 'structures', 'definitions')]
         for p in processes:
             if p.wait() != 0:
