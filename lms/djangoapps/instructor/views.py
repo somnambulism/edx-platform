@@ -310,7 +310,9 @@ def instructor_dashboard(request, course_id):
           "Delete student state for module" in action or
           "Rescore student's problem submission" in action):
         # get the form data
-        unique_student_identifier = request.POST.get('unique_student_identifier', '')
+        unique_student_identifier = request.POST.get(
+            'unique_student_identifier', ''
+        )
         problem_urlname = request.POST.get('problem_for_student', '')
         module_state_key = get_module_url(problem_urlname)
         # try to uniquely id student by email address or username
@@ -336,13 +338,22 @@ def instructor_dashboard(request, course_id):
                 try:
                     student_module.delete()
                     msg += "<font color='red'>Deleted student module state for {0}!</font>".format(module_state_key)
-                    event = {"problem": problem_url, "student": unique_student_identifier, "course": course_id}
-                    track.views.server_track(request, "delete-student-module-state", event, page="idashboard")
+                    event = {
+                        "problem": problem_url,
+                        "student": unique_student_identifier,
+                        "course": course_id
+                    }
+                    track.views.server_track(
+                        request,
+                        "delete-student-module-state",
+                        event,
+                        page="idashboard"
+                    )
                 except Exception as err:
                     current_msg = "Failed to delete module state for {0}/{1} ".format(
                         unique_student_identifier, problem_urlname
                     )
-                    msg += "Failed to delete module state for {0}/{1} ".format(unique_student_identifier, problem_urlname)
+                    msg += current_msg
                     log.exception(current_msg)
             elif "Reset student's attempts" in action:
                 # modify the problem's state
@@ -364,7 +375,9 @@ def instructor_dashboard(request, course_id):
                     track.views.server_track(request, "reset-student-attempts", event, page="idashboard")
                     msg += "<font color='green'>Module state successfully reset!</font>"
                 except Exception as err:
-                    current_msg = "Couldn't reset module state: {0} ".format(err)
+                    current_msg = "Couldn't reset module state for {0}/{1}. ".format(
+                        unique_student_identifier, problem_urlname
+                    )
                     msg += "<font color='red'>" + current_msg + "</font>"
                     log.exception(current_msg)
             else:
