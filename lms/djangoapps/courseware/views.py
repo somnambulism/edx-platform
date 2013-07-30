@@ -710,7 +710,7 @@ def make_badge_data(request, course=None):
     """
     Returns a dictionary:
         earned_badges -- a list of dictionaries; each dictionary has information about a badge
-        unlockable_badgetypes -- a list of dictionaries; each dictionary has information about an unearned badgetype
+        unlockable_badgeclasses -- a list of dictionaries; each dictionary has information about an unearned badgeclass
         badge_urls -- a list of urls, each url has badge JSON, the urls are sent to Open Badging to export badges
     """
 
@@ -742,7 +742,7 @@ def make_badge_data(request, course=None):
         badges_url += suffix
 
         course_url = os.path.join(badge_service, "courses", course.id)
-        unlockable_badgetypes_url = os.path.join(course_url, "badgetypes")
+        unlockable_badgeclasses_url = os.path.join(course_url, "badgeclasses")
 
     badge_urls = read(badges_url)
 
@@ -754,25 +754,25 @@ def make_badge_data(request, course=None):
     ]
 
     if course is not None:
-        unlockable_badgetype_urls = read(unlockable_badgetypes_url)
-        unlockable_badgetypes = [
+        unlockable_badgeclass_urls = read(unlockable_badgeclasses_url)
+        unlockable_badgeclasses = [
             read(url)
-            for url in unlockable_badgetype_urls.get('badgetypes', [])
+            for url in unlockable_badgeclass_urls.get('badgeclasses', [])
             if not url in [badge.get('badge', {}).get('href', None) for badge in earned_badges]
         ]
 
-        unlockable_badgetypes = [
-            badgetype
-            for badgetype in unlockable_badgetypes
-            if badgetype.get('is_enabled', True)
+        unlockable_badgeclasses = [
+            badgeclass
+            for badgeclass in unlockable_badgeclasses
+            if badgeclass.get('is_enabled', True)
         ]
 
     else:
-        unlockable_badgetypes = []
+        unlockable_badgeclasses = []
 
     return {
         'earned_badges': earned_badges,
-        'unlockable_badgetypes': unlockable_badgetypes,
+        'unlockable_badgeclasses': unlockable_badgeclasses,
         'badge_urls': json.dumps(badge_urls.get('badges', [])),
 
     }

@@ -74,7 +74,7 @@ img.unlockable {
       <header>
         <h1>Badges for <i>${course.display_name}</i> (Prototype)</h1>
       </header>
-      %if len(badge_data['unlockable_badgetypes']) != 0 or len(badge_data['earned_badges']) != 0:
+      %if len(badge_data['unlockable_badgeclasses']) != 0 or len(badge_data['earned_badges']) != 0:
         <input type="button" id="badge_info_button" value="" style="float:right; width:150px; margin-left:20px" />
         <p>
           If you wish, you can export these badges to <a href="http://beta.openbadges.org/">Mozilla Backpack</a> to share them.
@@ -104,21 +104,21 @@ img.unlockable {
           <ol class="sections">
             %for i in range(len(badge_data['earned_badges'])):
               <%badge = badge_data['earned_badges'][i]%>
-              <%badgetype = badge.get('badge', {})%>
-              <%num = badgetype.get('number_awarded')%>
+              <%badgeclass = badge.get('badge', {})%>
+              <%num = badgeclass.get('number_awarded')%>
               <li>
                 <table><tr>
                   <td><img src="${badge.get('image')}" style="float:left; width:100px; margin-right:20px; border-radius:3px;" /></td>
                   <td>
-                    <h3>${badgetype.get('name')}</h3>
+                    <h3>${badgeclass.get('name')}</h3>
                     <p>
-                    <b>${badgetype.get('description')} </b><br />
+                    <b>${badgeclass.get('description')} </b><br />
                       awarded on <b>${badge.get('issued_on')}</b> by
-                      <a href="${badgetype.get('issuer', {}).get('origin')}">${badgetype.get('issuer', {}).get('name')}</a><br />
+                      <a href="${badgeclass.get('issuer', {}).get('origin')}">${badgeclass.get('issuer', {}).get('name')}</a><br />
                       <i>
                       <b>
-                      %if badgetype.get('criteria_text', None):
-                        ${badgetype.get('criteria_text')}<br />
+                      %if badgeclass.get('criteria_text', None):
+                        ${badgeclass.get('criteria_text')}<br />
                       %endif
                       </b>
                       %if num is not None:
@@ -136,22 +136,22 @@ img.unlockable {
           </ol>
         </li>
         %endif
-        %if len(badge_data['unlockable_badgetypes']) != 0:
+        %if len(badge_data['unlockable_badgeclasses']) != 0:
         <li>
           <h2>Unlockable</h2>
           <ol class="sections">
-            %for i in range(len(badge_data['unlockable_badgetypes'])):
-              <%badgetype = badge_data['unlockable_badgetypes'][i]%>
-              <%num = badgetype.get('number_awarded')%>
+            %for i in range(len(badge_data['unlockable_badgeclasses'])):
+              <%badgeclass = badge_data['unlockable_badgeclasses'][i]%>
+              <%num = badgeclass.get('number_awarded')%>
               <li>
                 <table><tr>
-                  <td><img src="${badgetype.get('image')}" class="unlockable" style="float:left; width:100px; margin-right:20px; border-radius:3px" /></td>
+                  <td><img src="${badgeclass.get('image')}" class="unlockable" style="float:left; width:100px; margin-right:20px; border-radius:3px" /></td>
                   <td>
                     <p>
                     <i>
                     <b>
-                    %if badgetype.get('criteria_text', None):
-                        ${badgetype.get('criteria_text')}<br />
+                    %if badgeclass.get('criteria_text', None):
+                        ${badgeclass.get('criteria_text')}<br />
                     %endif
                     </b>
                     %if num is not None:
@@ -162,7 +162,7 @@ img.unlockable {
                   </td>
                 </tr></table>
               </li>
-              %if i != len(badge_data['unlockable_badgetypes']) - 1:
+              %if i != len(badge_data['unlockable_badgeclasses']) - 1:
                 <hr />
               %endif
             %endfor
