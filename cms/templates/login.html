@@ -69,6 +69,8 @@
       headers : {'X-CSRFToken':getCookie('csrftoken')}
     });
   }
+  
+  $('form#login_form #email').focus();
 
   $('form#login_form').submit(function(e) {
     e.preventDefault();
